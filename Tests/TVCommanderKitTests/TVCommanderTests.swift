@@ -82,7 +82,7 @@ private class MockTVCommanderDelegate: TVCommanderDelegate {
         onTVCommanderRemoteCommand?(command)
     }
 
-    func tvCommander(_ tvCommander: TVCommander, didEncounterError error: Error?) {
+    func tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError) {
         onTVCommanderError?(error)
     }
 }

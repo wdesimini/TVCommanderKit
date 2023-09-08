@@ -13,7 +13,7 @@ public protocol TVCommanderDelegate: AnyObject {
     func tvCommanderDidDisconnect(_ tvCommander: TVCommander)
     func tvCommander(_ tvCommander: TVCommander, didUpdateAuthState authStatus: TVAuthStatus)
     func tvCommander(_ tvCommander: TVCommander, didWriteRemoteCommand command: TVRemoteCommand)
-    func tvCommander(_ tvCommander: TVCommander, didEncounterError error: Error?)
+    func tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)
 }
 
 public class TVCommander: WebSocketDelegate, CertificatePinning {
@@ -37,8 +37,15 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     // MARK: Establish WebSocket Connection
 
     public func connectToTV() {
-        guard !isConnected else { return }
-        buildTVURL().flatMap(setupWebSocket(with:))
+        guard !isConnected else {
+            handleError(.connectionAlreadyEstablished)
+            return
+        }
+        guard let url = buildTVURL() else {
+            handleError(.urlConstructionFailed)
+            return
+        }
+        setupWebSocket(with: url)
     }
 
     private func buildTVURL() -> URL? {
@@ -79,7 +86,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         case .binary(let data):
             handleWebSocketBinary(data)
         case .error(let error):
-            handleWebSocketError(error)
+            handleError(.webSocketError(error))
         default:
             break
         }
@@ -104,6 +111,8 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     private func handleWebSocketText(_ text: String) {
         if let packetData = text.asData {
             webSocketDidReadPacket(packetData)
+        } else {
+            handleError(.packetDataParsingFailed)
         }
     }
 
@@ -114,11 +123,9 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     private func webSocketDidReadPacket(_ packet: Data) {
         if let authResponse = parseAuthResponse(from: packet) {
             handleAuthResponse(authResponse)
+        } else {
+            handleError(.packetDataParsingFailed)
         }
-    }
-
-    private func handleWebSocketError(_ error: Error?) {
-        delegate?.tvCommander(self, didEncounterError: error)
     }
 
     // MARK: Receive Auth
@@ -138,7 +145,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         case .timeout:
             handleAuthCancelled(response)
         default:
-            break
+            handleError(.authResponseUnexpectedChannelEvent(response))
         }
     }
 
@@ -150,6 +157,8 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         } else if let refreshedToken = response.data?.clients.first(
             where: { $0.attributes.name == tvConfig.app.asBase64 })?.attributes.token {
             tvConfig.token = refreshedToken
+        } else {
+            handleError(.noTokenInAuthResponse(response))
         }
     }
 
@@ -166,10 +175,27 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     // MARK: Send Remote Control Commands
 
     public func sendRemoteCommand(key: TVRemoteCommand.Params.ControlKey) {
-        guard authStatus == .allowed else { return }
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+        sendCommandOverWebSocket(createRemoteCommand(key: key))
+    }
+
+    private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
         let params = TVRemoteCommand.Params(cmd: .click, dataOfCmd: key, option: false, typeOfRemote: .remoteKey)
-        let command = TVRemoteCommand(method: .control, params: params)
-        guard let commandStr = try? command.asString() else { return }
+        return TVRemoteCommand(method: .control, params: params)
+    }
+
+    private func sendCommandOverWebSocket(_ command: TVRemoteCommand) {
+        guard let commandStr = try? command.asString() else {
+            handleError(.commandConversionToStringFailed)
+            return
+        }
         webSocket?.write(string: commandStr) { [weak self] in
             guard let self else { return }
             self.delegate?.tvCommander(self, didWriteRemoteCommand: command)
@@ -180,5 +206,11 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
 
     public func disconnectFromTV() {
         webSocket?.disconnect()
+    }
+
+    // MARK: Handler Errors
+
+    private func handleError(_ error: TVCommanderError) {
+        delegate?.tvCommander(self, didEncounterError: error)
     }
 }
