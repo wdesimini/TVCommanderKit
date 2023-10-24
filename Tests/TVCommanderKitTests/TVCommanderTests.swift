@@ -10,9 +10,9 @@ final class TVCommanderTests: XCTestCase {
     private var tv: TVCommander!
     private var mockDelegate: MockTVCommanderDelegate!
 
-    override func setUp() {
+    override func setUpWithError() throws {
         continueAfterFailure = false
-        tv = TVCommander(tvIPAddress: ipAddress, appName: app, authToken: authToken)
+        tv = try TVCommander(tvIPAddress: ipAddress, appName: app, authToken: authToken)
         mockDelegate = .init()
         tv.delegate = mockDelegate
     }
@@ -20,6 +20,14 @@ final class TVCommanderTests: XCTestCase {
     override func tearDown() {
         tv = nil
         mockDelegate = nil
+    }
+
+    func testIPAddressValidation() {
+        XCTAssertTrue("192.168.0.1".isValidIPAddress)
+        XCTAssertTrue("10.0.0.1".isValidIPAddress)
+        XCTAssertFalse("256.256.256.256".isValidIPAddress)
+        XCTAssertFalse("0.0".isValidIPAddress)
+        XCTAssertFalse("".isValidIPAddress)
     }
 
     func testConnectAuthMuteUnmuteDisconnect() {

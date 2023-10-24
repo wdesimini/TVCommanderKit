@@ -42,6 +42,16 @@ extension Encodable {
 // MARK: String
 
 extension String {
+    var isValidAppName: Bool {
+        !isEmpty
+    }
+
+    var isValidIPAddress: Bool {
+        let regex = #"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#
+        let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
+        return predicate.evaluate(with: self)
+    }
+
     var asBase64: String? {
         asData?.base64EncodedString()
     }

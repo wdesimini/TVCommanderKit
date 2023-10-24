@@ -23,7 +23,7 @@ import TVCommanderKit
 2. Initialize a `TVCommander` object with your TV's IP address and application name:
 
 ```swift
-let tvCommander = TVCommander(tvIPAddress: "your_tv_ip_address", appName: "your_app_name")
+let tvCommander = try TVCommander(tvIPAddress: "your_tv_ip_address", appName: "your_app_name")
 ```
 
 3. Implement the necessary delegate methods to receive updates and handle events (see [Delegate Methods](#delegate-methods)), then set your delegate to receive updates and events from the TVCommander:
