@@ -36,7 +36,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
 
     // MARK: Establish WebSocket Connection
 
-    public func connectToTV() {
+    public func connectToTV(certPinner: CertificatePinning? = nil) {
         guard !isConnected else {
             handleError(.connectionAlreadyEstablished)
             return
@@ -45,7 +45,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             handleError(.urlConstructionFailed)
             return
         }
-        setupWebSocket(with: url)
+        setupWebSocket(with: url, certPinner: certPinner ?? self)
     }
 
     private func buildTVURL() -> URL? {
@@ -61,16 +61,12 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         return components.url
     }
 
-    private func setupWebSocket(with url: URL) {
+    private func setupWebSocket(with url: URL, certPinner: CertificatePinning) {
         let request = URLRequest(url: url)
-        webSocket = createWebSocket(with: request)
+        webSocket = WebSocket(request: request, certPinner: certPinner)
         webSocket?.respondToPingWithPong = true
         webSocket?.delegate = self
         webSocket?.connect()
-    }
-
-    private func createWebSocket(with request: URLRequest) -> WebSocket {
-        WebSocket(request: request, certPinner: self)
     }
 
     // MARK: Interact with WebSocket
