@@ -72,7 +72,17 @@ tvCommander.connectToTV()
 
 ## Authorizing Application with TV
 
-After establishing a connection to the TV, you'll need to authorize your app for sending remote controls. If your TV hasn't already handled your application's authorization, a prompt should appear on your TV for you to choose an authorization option.
+After establishing a connection to the TV, you'll need to authorize your app for sending remote controls. You can access the authorization status of your application via the `authStatus` property. If your TV hasn't already handled your application's authorization, a prompt should appear on your TV for you to choose an authorization option. Once you select an option within the prompt, if the authorization status updated, it will get passed back through the corresponding delegate method:
+
+```swift
+func tvCommander(_ tvCommander: TVCommander, didUpdateAuthState authStatus: TVAuthStatus) {
+    switch authStatus {
+    case .none: // application authorization incomplete
+    case .allowed: // application allowed to send commands
+    case .denied: // application not allowed to send commands
+    }
+}
+```
 
 ## Sending Remote Control Commands
 
