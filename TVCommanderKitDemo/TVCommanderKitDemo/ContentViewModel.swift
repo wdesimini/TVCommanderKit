@@ -36,9 +36,10 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
     // MARK: User Actions
 
     func userTappedConnect() {
-        tvIsConnecting = true
         setupTVCommander()
-        tvCommander?.connectToTV()
+        guard let tvCommander else { return }
+        tvIsConnecting = true
+        tvCommander.connectToTV()
     }
 
     func userTappedDismissError() {
@@ -58,8 +59,12 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
 
     private func setupTVCommander() {
         guard tvCommander == nil else { return }
-        tvCommander = TVCommander(tvIPAddress: tvIPAddress, appName: appName)
-        tvCommander?.delegate = self
+        do {
+            tvCommander = try TVCommander(tvIPAddress: tvIPAddress, appName: appName)
+            tvCommander?.delegate = self
+        } catch {
+            tvError = error
+        }
     }
 
     private func removeTVCommander() {
