@@ -70,6 +70,8 @@ To establish a connection to your TV, use the `connectToTV()` method. This metho
 tvCommander.connectToTV()
 ```
 
+If you're worried about man-in-the-middle attacks, it's recommended that you implement a custom cert-pinning type and pass it through the optional `certPinner` parameter to ensure connection to a trusted server.
+
 ## Authorizing Application with TV
 
 After establishing a connection to the TV, you'll need to authorize your app for sending remote controls. You can access the authorization status of your application via the `authStatus` property. If your TV hasn't already handled your application's authorization, a prompt should appear on your TV for you to choose an authorization option. Once you select an option within the prompt, if the authorization status updated, it will get passed back through the corresponding delegate method:
