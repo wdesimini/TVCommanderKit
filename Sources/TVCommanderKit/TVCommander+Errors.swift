@@ -8,6 +8,10 @@
 import Foundation
 
 public enum TVCommanderError: Error {
+    // invalid app name
+    case invalidAppNameEntered
+    // invalid ip address
+    case invalidIPAddressEntered
     // trying to connect, but the connection is already established.
     case connectionAlreadyEstablished
     // the URL could not be constructed.
