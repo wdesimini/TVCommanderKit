@@ -10,6 +10,7 @@
 - [Sending Remote Control Commands](#sending-remote-control-commands)
 - [Disconnecting from TV](#disconnecting-from-tv)
 - [Error Handling](#error-handling)
+- [License](#license)
 
 ## Usage
 
@@ -92,6 +93,10 @@ tvCommander.disconnectFromTV()
 ## Error Handling
 
 The TVCommander SDK includes error handling for various scenarios, and errors are reported through the delegate method `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`. You should implement this method to handle errors appropriately.
+
+## License
+
+The TVCommanderKit SDK is distributed under the MIT license.
 
 ---
 
