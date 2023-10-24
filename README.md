@@ -50,7 +50,7 @@ tvCommander.disconnectFromTV()
 
 ## Delegate Methods
 
-The TVCommanderDelegate protocol provides methods to receive updates and events from the TVCommander SDK:
+The TVCommanderDelegate protocol provides methods to receive updates and events from the TVCommanderKit SDK:
 
 - `tvCommanderDidConnect(_ tvCommander: TVCommander)`: Called when the TVCommander successfully connects to the TV.
 
@@ -92,7 +92,7 @@ tvCommander.disconnectFromTV()
 
 ## Error Handling
 
-The TVCommander SDK includes error handling for various scenarios, and errors are reported through the delegate method `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`. You should implement this method to handle errors appropriately.
+The TVCommanderKit SDK includes error handling for various scenarios, and errors are reported through the delegate method `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`. You should implement this method to handle errors appropriately.
 
 ## License
 
