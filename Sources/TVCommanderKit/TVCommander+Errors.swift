@@ -30,6 +30,8 @@ public enum TVCommanderError: Error {
     case remoteCommandAuthenticationStatusNotAllowed
     // command conversion to a string fails.
     case commandConversionToStringFailed
+    // invalid input to keyboard navigation
+    case keyboardCharNotFound(String)
     // an unknown error occurs.
     case unknownError(Error?)
 }
