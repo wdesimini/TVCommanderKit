@@ -65,6 +65,50 @@ final class TVCommanderTests: XCTestCase {
         tv.disconnectFromTV()
         wait(for: [expectation3])
     }
+
+    func testEnterTextOnYoutube() {
+        let connectExpectation = expectation(description: "connect")
+        let authExpectation = expectation(description: "auth")
+        let writeExpectation = expectation(description: "write commands")
+        let disconnectExpectation = expectation(description: "disconnect")
+        // given
+        let text = "text"
+        let keyboard = TVKeyboardLayout.youtube
+        writeExpectation.expectedFulfillmentCount = 17 // # of keys to enter "text"
+        var written = [TVRemoteCommand.Params.ControlKey]()
+        mockDelegate.onTVCommanderDidConnect = { connectExpectation.fulfill() }
+        mockDelegate.onTVCommanderAuthStatusUpdate = { _ in authExpectation.fulfill() }
+        mockDelegate.onTVCommanderRemoteCommand = {
+            written.append($0.params.dataOfCmd)
+            writeExpectation.fulfill()
+        }
+        mockDelegate.onTVCommanderDidDisconnect = { disconnectExpectation.fulfill() }
+        // when
+        tv.connectToTV()
+        wait(for: [connectExpectation, authExpectation])
+        // then
+        XCTAssert(tv.isConnected)
+        XCTAssertEqual(tv.authStatus, .allowed)
+        // when
+        tv.enterText(text, on: keyboard)
+        wait(for: [writeExpectation])
+        // then
+        XCTAssertEqual(written, [
+            // -> t
+            .enter,
+            // -> e
+            .up, .up, .left, .enter,
+            // -> x
+            .down, .down, .down, .left, .left, .enter,
+            // -> t
+            .up, .right, .right, .right, .enter
+        ])
+        // when
+        tv.disconnectFromTV()
+        wait(for: [disconnectExpectation])
+        // then
+        XCTAssertFalse(tv.isConnected)
+    }
 }
 
 private class MockTVCommanderDelegate: TVCommanderDelegate {

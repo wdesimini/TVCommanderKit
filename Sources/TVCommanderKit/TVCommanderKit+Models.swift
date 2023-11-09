@@ -166,3 +166,5 @@ public struct TVClient: Codable, Identifiable {
         self.isHost = isHost
     }
 }
+
+public typealias TVKeyboardLayout = [[String]]
