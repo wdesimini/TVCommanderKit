@@ -81,7 +81,7 @@ After establishing a connection to the TV, you'll need to authorize your app for
 func tvCommander(_ tvCommander: TVCommander, didUpdateAuthState authStatus: TVAuthStatus) {
     switch authStatus {
     case .none: // application authorization incomplete
-    case .allowed: // application allowed to send commands
+    case .allowed: // application allowed to send commands, token stored in tvCommander.tvConfig.token
     case .denied: // application not allowed to send commands
     }
 }
