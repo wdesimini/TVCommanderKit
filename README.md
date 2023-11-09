@@ -10,6 +10,7 @@
 - [Sending Remote Control Commands](#sending-remote-control-commands)
 - [Disconnecting from TV](#disconnecting-from-tv)
 - [Error Handling](#error-handling)
+- [Text Entry](#text-entry)
 - [License](#license)
 
 ## Usage
@@ -92,6 +93,16 @@ You can send remote control commands to your TV using the `sendRemoteCommand(key
 
 ```swift
 tvCommander.sendRemoteCommand(key: .enter)
+```
+
+## Text Entry
+
+**TVCommanderKit** includes a convenient text entry feature, allowing you to quickly input text into on-screen keyboards. This feature is useful for applications that require users to search or input text on their TVs, as it will convert a given text into a series of arrow and enter controls to send one after the other. Ensure that you are connected to the TV and the authorization status is allowed before entering text.
+
+```swift
+let textToEnter = "Hello, World!"
+let keyboardLayout = TVKeyboardLayout.youtube
+tvCommander.enterText(textToEnter, on: keyboardLayout)
 ```
 
 ## Disconnecting from TV
