@@ -30,40 +30,63 @@ final class TVCommanderTests: XCTestCase {
         XCTAssertFalse("".isValidIPAddress)
     }
 
-    func testConnectAuthMuteUnmuteDisconnect() {
-        // verify params
+    func testConnectAuthDisconnect() {
+        let connectExpectation = expectation(description: "connect")
+        let authExpectation = expectation(description: "get auth token")
+        let disconnectExpectation = expectation(description: "disconnect")
+        // given
+        mockDelegate.onTVCommanderDidConnect = { connectExpectation.fulfill() }
+        mockDelegate.onTVCommanderAuthStatusUpdate = { _ in authExpectation.fulfill() }
+        mockDelegate.onTVCommanderDidDisconnect = { disconnectExpectation.fulfill() }
+        // when
+        tv.connectToTV()
+        wait(for: [connectExpectation, authExpectation])
+        // then
+        XCTAssertEqual(tv.authStatus, .allowed)
+        XCTAssertNotNil(tv.tvConfig.token)
+        print("token - \(tv.tvConfig.token!)")
+        // when
+        tv.disconnectFromTV()
+        wait(for: [disconnectExpectation])
+        // then
+        XCTAssertFalse(tv.isConnected)
+    }
+
+    func testMuteUnmute() {
+        let connectExpectation = expectation(description: "connect")
+        let authExpectation = expectation(description: "auth")
+        let muteUnmuteExpectation = expectation(description: "mute and unmute")
+        let disconnectExpectation = expectation(description: "disconnect")
+        // given
+        var written = [TVRemoteCommand]()
+        muteUnmuteExpectation.expectedFulfillmentCount = 2 // mute then unmute
+        mockDelegate.onTVCommanderDidConnect = { connectExpectation.fulfill() }
+        mockDelegate.onTVCommanderAuthStatusUpdate = { _ in authExpectation.fulfill() }
+        mockDelegate.onTVCommanderRemoteCommand = {
+            written.append($0)
+            muteUnmuteExpectation.fulfill()
+        }
+        mockDelegate.onTVCommanderDidDisconnect = { disconnectExpectation.fulfill() }
+        // when
         XCTAssertFalse(ipAddress.isEmpty)
-        // connect and auth
-        let expectation1 = expectation(description: "connect and auth")
-        expectation1.expectedFulfillmentCount = 2
-        mockDelegate.onTVCommanderDidConnect = {
-            expectation1.fulfill()
-        }
-        mockDelegate.onTVCommanderAuthStatusUpdate = { _ in
-            expectation1.fulfill()
-        }
         XCTAssertEqual(tv.authStatus, .none)
         tv.connectToTV()
-        wait(for: [expectation1])
+        wait(for: [connectExpectation, authExpectation])
+        // then
+        XCTAssert(tv.isConnected)
         XCTAssertEqual(tv.authStatus, .allowed)
-        // mute & unmute
-        let expectation2 = expectation(description: "mute and unmute")
-        expectation2.expectedFulfillmentCount = 2
-        mockDelegate.onTVCommanderRemoteCommand = {
-            XCTAssertEqual($0.params.dataOfCmd, .mute)
-            expectation2.fulfill()
-        }
+        // when
         tv.sendRemoteCommand(key: .mute)
         sleep(4)
         tv.sendRemoteCommand(key: .mute)
-        wait(for: [expectation2])
-        // disconnect
-        let expectation3 = expectation(description: "disconnect")
-        mockDelegate.onTVCommanderDidDisconnect = {
-            expectation3.fulfill()
-        }
+        wait(for: [muteUnmuteExpectation])
+        // then
+        XCTAssertEqual(written.map(\.params.dataOfCmd), [.mute, .mute])
+        // when
         tv.disconnectFromTV()
-        wait(for: [expectation3])
+        wait(for: [disconnectExpectation])
+        // then
+        XCTAssertFalse(tv.isConnected)
     }
 
     func testEnterTextOnYoutube() {
