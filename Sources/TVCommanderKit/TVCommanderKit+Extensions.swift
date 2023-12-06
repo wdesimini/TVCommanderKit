@@ -10,6 +10,13 @@ import Foundation
 // MARK: Data
 
 extension Data {
+    static func magicPacket(from device: TVWakeOnLANDevice) -> Data {
+        var magicPacketRaw = [UInt8](repeating: 0xFF, count: 6)
+        let macAddressData = device.mac.split(separator: ":").compactMap { UInt8($0, radix: 16) }
+        for _ in 0..<16 { magicPacketRaw.append(contentsOf: macAddressData) }
+        return Data(magicPacketRaw)
+    }
+
     var asJSON: [String: Any]? {
         try? JSONSerialization.jsonObject(with: self) as? [String: Any]
     }

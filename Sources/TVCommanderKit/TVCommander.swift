@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Network
 import Starscream
 
 public protocol TVCommanderDelegate: AnyObject {
@@ -280,5 +281,36 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
 
     private func handleError(_ error: TVCommanderError) {
         delegate?.tvCommander(self, didEncounterError: error)
+    }
+
+    // MARK: Wake on LAN
+
+    public static func wakeOnLAN(
+        device: TVWakeOnLANDevice,
+        queue: DispatchQueue = .global(),
+        completion: @escaping (TVCommanderError?) -> Void
+    ) {
+        let connection = NWConnection(
+            host: .init(device.broadcast),
+            port: .init(rawValue: device.port)!,
+            using: .udp
+        )
+        connection.stateUpdateHandler = { newState in
+            switch newState {
+            case .ready:
+                connection.send(
+                    content: .magicPacket(from: device),
+                    completion: .contentProcessed({
+                        connection.cancel()
+                        completion($0.flatMap(TVCommanderError.wakeOnLANProcessingError))
+                    })
+                )
+            case .failed(let error):
+                completion(.wakeOnLANConnectionError(error))
+            default:
+                break
+            }
+        }
+        connection.start(queue: queue)
     }
 }

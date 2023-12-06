@@ -168,3 +168,15 @@ public struct TVClient: Codable, Identifiable {
 }
 
 public typealias TVKeyboardLayout = [[String]]
+
+public struct TVWakeOnLANDevice {
+    public var mac: String
+    public var broadcast: String
+    public var port: UInt16
+
+    public init(mac: String, broadcast: String = "255.255.255.255", port: UInt16 = 9) {
+        self.mac = mac
+        self.broadcast = broadcast
+        self.port = port
+    }
+}

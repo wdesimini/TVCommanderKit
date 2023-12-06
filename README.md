@@ -11,6 +11,7 @@
 - [Disconnecting from TV](#disconnecting-from-tv)
 - [Error Handling](#error-handling)
 - [Text Entry](#text-entry)
+- [Wake on LAN](#wake-on-lan)
 - [License](#license)
 
 ## Usage
@@ -116,6 +117,21 @@ tvCommander.disconnectFromTV()
 ## Error Handling
 
 The TVCommanderKit SDK includes error handling for various scenarios, and errors are reported through the delegate method `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`. You should implement this method to handle errors appropriately.
+
+## Wake on LAN
+
+The TVCommanderKit SDK now supports Wake on LAN functionality. You can wake up your TV using the `wakeOnLAN` method:
+
+```swift
+let device = TVWakeOnLANDevice(mac: "your_tv_mac_address")
+TVCommander.wakeOnLAN(device: device) { error in
+    if let error = error {
+        print("Wake on LAN failed: \(error.localizedDescription)")
+    } else {
+        print("Wake on LAN successful!")
+    }
+}
+```
 
 ## License
 
