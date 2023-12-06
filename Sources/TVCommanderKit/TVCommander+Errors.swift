@@ -32,6 +32,10 @@ public enum TVCommanderError: Error {
     case commandConversionToStringFailed
     // invalid input to keyboard navigation
     case keyboardCharNotFound(String)
+    // wake on LAN connection error
+    case wakeOnLANConnectionError(Error)
+    // wake on LAN content processing error
+    case wakeOnLANProcessingError(Error)
     // an unknown error occurs.
     case unknownError(Error?)
 }
