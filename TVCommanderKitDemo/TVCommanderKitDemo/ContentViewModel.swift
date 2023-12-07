@@ -14,9 +14,11 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
 
     @Published var appName = "sample_app"
     @Published var tvIPAddress = ""
+    @Published var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
     @Published private(set) var tvIsConnecting = false
     @Published private(set) var tvIsConnected = false
     @Published private(set) var tvIsDisconnecting = false
+    @Published private(set) var tvIsWakingOnLAN = false
     @Published private(set) var tvAuthStatus = TVAuthStatus.none
     @Published private(set) var tvError: Error?
     private var tvCommander: TVCommander?
@@ -31,6 +33,10 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
 
     var disconnectEnabled: Bool {
         tvIsConnected
+    }
+
+    var wakeOnLANEnabled: Bool {
+        !tvIsWakingOnLAN
     }
 
     // MARK: User Actions
@@ -53,6 +59,15 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
     func userTappedDisconnect() {
         tvIsDisconnecting = true
         tvCommander?.disconnectFromTV()
+    }
+
+    func userTappedWakeOnLAN() {
+        tvIsWakingOnLAN = true
+        TVCommander.wakeOnLAN(device: tvWakeOnLANDevice, queue: .main) { 
+            [weak self] error in
+            self?.tvIsWakingOnLAN = false
+            self?.tvError = error
+        }
     }
 
     // MARK: Lifecycle

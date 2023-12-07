@@ -35,7 +35,16 @@ struct ContentView: View {
                         Spacer()
                         Text(contentViewModel.tvIsDisconnecting ? "Yes" : "No")
                     }
-                    Text("Auth Status: \(authStatusAsText(contentViewModel.tvAuthStatus))")
+                    HStack {
+                        Text("Auth Status")
+                        Spacer()
+                        Text(authStatusAsText(contentViewModel.tvAuthStatus))
+                    }
+                    HStack {
+                        Text("Waking On LAN")
+                        Spacer()
+                        Text(contentViewModel.tvIsWakingOnLAN ? "Yes" : "No")
+                    }
                 }
                 Section(header: Text("Actions")) {
                     Button("Connect") {
@@ -50,6 +59,15 @@ struct ContentView: View {
                         contentViewModel.userTappedDisconnect()
                     }
                     .disabled(!contentViewModel.disconnectEnabled)
+                }
+                Section("Wake On LAN") {
+                    TextField("TV MAC Address", text: $contentViewModel.tvWakeOnLANDevice.mac)
+                    TextField("TV Broadcast Address", text: $contentViewModel.tvWakeOnLANDevice.broadcast)
+                    TextField("TV Port", value: $contentViewModel.tvWakeOnLANDevice.port, formatter: NumberFormatter())
+                    Button("Wake On LAN") {
+                        contentViewModel.userTappedWakeOnLAN()
+                    }
+                    .disabled(!contentViewModel.wakeOnLANEnabled)
                 }
             }
             .navigationBarTitle("TV Controller")
