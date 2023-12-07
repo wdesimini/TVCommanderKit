@@ -15,6 +15,9 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
     @Published var appName = "sample_app"
     @Published var tvIPAddress = ""
     @Published var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
+    @Published var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
+    @Published var keyboardSelected = "qwerty"
+    @Published var keyboardEntry = ""
     @Published private(set) var tvIsConnecting = false
     @Published private(set) var tvIsConnected = false
     @Published private(set) var tvIsDisconnecting = false
@@ -31,12 +34,57 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
         tvIsConnected && tvAuthStatus == .allowed
     }
 
+    var keyboardSendEnabled: Bool {
+        controlsEnabled && !keyboardEntry.isEmpty
+    }
+
     var disconnectEnabled: Bool {
         tvIsConnected
     }
 
     var wakeOnLANEnabled: Bool {
         !tvIsWakingOnLAN
+    }
+
+    var keyboards: [String] { ["qwerty", "youtube"] }
+
+    var remoteCommandKeys: [TVRemoteCommand.Params.ControlKey] {
+        [
+            .powerOff,
+            .up,
+            .down,
+            .left,
+            .right,
+            .enter,
+            .returnKey,
+            .channelList,
+            .menu,
+            .source,
+            .guide,
+            .tools,
+            .info,
+            .colorRed,
+            .colorGreen,
+            .colorYellow,
+            .colorBlue,
+            .key3D,
+            .volumeUp,
+            .volumeDown,
+            .mute,
+            .number0,
+            .number1,
+            .number2,
+            .number3,
+            .number4,
+            .number5,
+            .number6,
+            .number7,
+            .number8,
+            .number9,
+            .sourceTV,
+            .sourceHDMI,
+            .contents,
+        ]
     }
 
     // MARK: User Actions
@@ -52,8 +100,19 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
         tvError = nil
     }
 
-    func userTappedMute() {
-        tvCommander?.sendRemoteCommand(key: .mute)
+    func userTappedSend() {
+        tvCommander?.sendRemoteCommand(key: remoteCommandKeySelected)
+    }
+
+    func userTappedKeyboardSend() {
+        switch keyboardSelected {
+        case "youtube":
+            tvCommander?.enterText(keyboardEntry, on: .youtube)
+        case "qwerty":
+            tvCommander?.enterText(keyboardEntry, on: .qwerty)
+        default:
+            fatalError()
+        }
     }
 
     func userTappedDisconnect() {
