@@ -15,59 +15,30 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("TV Settings")) {
+                Section("Connect / Disconnect TV") {
                     TextField("App Name", text: $contentViewModel.appName)
                     TextField("TV IP Address", text: $contentViewModel.tvIPAddress)
-                }
-                Section(header: Text("Connection Status")) {
-                    HStack {
-                        Text("Connected:")
-                        Spacer()
-                        Text(contentViewModel.tvIsConnected ? "Yes" : "No")
-                    }
-                    HStack {
-                        Text("Connecting:")
-                        Spacer()
-                        Text(contentViewModel.tvIsConnecting ? "Yes" : "No")
-                    }
-                    HStack {
-                        Text("Disconnecting:")
-                        Spacer()
-                        Text(contentViewModel.tvIsDisconnecting ? "Yes" : "No")
-                    }
-                    HStack {
-                        Text("Auth Status")
-                        Spacer()
-                        Text(authStatusAsText(contentViewModel.tvAuthStatus))
-                    }
-                    HStack {
-                        Text("Waking On LAN")
-                        Spacer()
-                        Text(contentViewModel.tvIsWakingOnLAN ? "Yes" : "No")
+                    if contentViewModel.tvIsConnected {
+                        Button("Disconnect", action: contentViewModel.userTappedDisconnect)
+                            .disabled(!contentViewModel.disconnectEnabled)
+                    } else {
+                        Button("Connect", action: contentViewModel.userTappedConnect)
+                            .disabled(!contentViewModel.connectEnabled)
                     }
                 }
-                Section(header: Text("Actions")) {
-                    Button("Connect") {
-                        contentViewModel.userTappedConnect()
-                    }
-                    .disabled(!contentViewModel.connectEnabled)
-                    Button("Mute") {
-                        contentViewModel.userTappedMute()
-                    }
-                    .disabled(!contentViewModel.controlsEnabled)
-                    Button("Disconnect") {
-                        contentViewModel.userTappedDisconnect()
-                    }
-                    .disabled(!contentViewModel.disconnectEnabled)
+                Section("TV Auth Status") {
+                    Text(authStatusAsText(contentViewModel.tvAuthStatus))
                 }
-                Section("Wake On LAN") {
+                Section("Send TV Key Commands") {
+                    Button("Mute", action: contentViewModel.userTappedMute)
+                        .disabled(!contentViewModel.controlsEnabled)
+                }
+                Section("Wake TV On LAN") {
                     TextField("TV MAC Address", text: $contentViewModel.tvWakeOnLANDevice.mac)
                     TextField("TV Broadcast Address", text: $contentViewModel.tvWakeOnLANDevice.broadcast)
                     TextField("TV Port", value: $contentViewModel.tvWakeOnLANDevice.port, formatter: NumberFormatter())
-                    Button("Wake On LAN") {
-                        contentViewModel.userTappedWakeOnLAN()
-                    }
-                    .disabled(!contentViewModel.wakeOnLANEnabled)
+                    Button("Wake On LAN", action: contentViewModel.userTappedWakeOnLAN)
+                        .disabled(!contentViewModel.wakeOnLANEnabled)
                 }
             }
             .navigationBarTitle("TV Controller")
