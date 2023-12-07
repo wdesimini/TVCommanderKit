@@ -30,7 +30,12 @@ struct ContentView: View {
                     Text(authStatusAsText(contentViewModel.tvAuthStatus))
                 }
                 Section("Send TV Key Commands") {
-                    Button("Mute", action: contentViewModel.userTappedMute)
+                    Picker("Key Command", selection: $contentViewModel.remoteCommandKeySelected) {
+                        ForEach(contentViewModel.remoteCommandKeys, id: \.rawValue) {
+                            Text($0.rawValue).tag($0)
+                        }
+                    }
+                    Button("Send", action: contentViewModel.userTappedSend)
                         .disabled(!contentViewModel.controlsEnabled)
                 }
                 Section("Wake TV On LAN") {

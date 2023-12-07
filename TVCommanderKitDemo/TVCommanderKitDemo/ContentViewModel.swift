@@ -15,6 +15,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
     @Published var appName = "sample_app"
     @Published var tvIPAddress = ""
     @Published var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
+    @Published var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
     @Published private(set) var tvIsConnecting = false
     @Published private(set) var tvIsConnected = false
     @Published private(set) var tvIsDisconnecting = false
@@ -39,6 +40,45 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
         !tvIsWakingOnLAN
     }
 
+    var remoteCommandKeys: [TVRemoteCommand.Params.ControlKey] {
+        [
+            .powerOff,
+            .up,
+            .down,
+            .left,
+            .right,
+            .enter,
+            .returnKey,
+            .channelList,
+            .menu,
+            .source,
+            .guide,
+            .tools,
+            .info,
+            .colorRed,
+            .colorGreen,
+            .colorYellow,
+            .colorBlue,
+            .key3D,
+            .volumeUp,
+            .volumeDown,
+            .mute,
+            .number0,
+            .number1,
+            .number2,
+            .number3,
+            .number4,
+            .number5,
+            .number6,
+            .number7,
+            .number8,
+            .number9,
+            .sourceTV,
+            .sourceHDMI,
+            .contents,
+        ]
+    }
+
     // MARK: User Actions
 
     func userTappedConnect() {
@@ -52,8 +92,8 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
         tvError = nil
     }
 
-    func userTappedMute() {
-        tvCommander?.sendRemoteCommand(key: .mute)
+    func userTappedSend() {
+        tvCommander?.sendRemoteCommand(key: remoteCommandKeySelected)
     }
 
     func userTappedDisconnect() {
