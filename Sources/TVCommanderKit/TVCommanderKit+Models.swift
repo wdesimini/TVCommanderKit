@@ -14,6 +14,7 @@ public enum TVAuthStatus {
 public typealias TVAuthToken = String
 
 public struct TVConnectionConfiguration {
+    public let id: String?
     public let app: String
     public let path: String
     public let ipAddress: String
@@ -21,7 +22,8 @@ public struct TVConnectionConfiguration {
     public let scheme: String
     public var token: TVAuthToken?
 
-    public init(app: String, path: String, ipAddress: String, port: Int, scheme: String, token: TVAuthToken?) {
+    public init(id: String?, app: String, path: String, ipAddress: String, port: Int, scheme: String, token: TVAuthToken?) {
+        self.id = id
         self.app = app
         self.path = path
         self.ipAddress = ipAddress

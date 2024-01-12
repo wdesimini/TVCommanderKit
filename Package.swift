@@ -20,7 +20,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "TVCommanderKit",
-            dependencies: ["Starscream"]),
+            dependencies: ["SmartView", "Starscream"]),
+        .binaryTarget(
+            name: "SmartView",
+            path: "SmartView.xcframework"),
         .testTarget(
             name: "TVCommanderKitTests",
             dependencies: ["TVCommanderKit"]),

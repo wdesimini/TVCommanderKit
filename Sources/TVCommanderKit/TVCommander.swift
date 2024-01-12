@@ -25,7 +25,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     private var webSocket: WebSocket?
     private var commandQueue = [TVRemoteCommand]()
 
-    public init(tvIPAddress: String, appName: String, authToken: TVAuthToken? = nil) throws {
+    public init(tvId: String? = nil, tvIPAddress: String, appName: String, authToken: TVAuthToken? = nil) throws {
         guard appName.isValidAppName else {
             throw TVCommanderError.invalidAppNameEntered
         }
@@ -33,6 +33,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             throw TVCommanderError.invalidIPAddressEntered
         }
         tvConfig = TVConnectionConfiguration(
+            id: tvId,
             app: appName,
             path: "/api/v2/channels/samsung.remote.control",
             ipAddress: tvIPAddress,

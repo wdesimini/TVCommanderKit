@@ -8,7 +8,7 @@
 import Foundation
 import TVCommanderKit
 
-class ContentViewModel: ObservableObject, TVCommanderDelegate {
+class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate {
 
     // MARK: State
 
@@ -22,9 +22,12 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
     @Published private(set) var tvIsConnected = false
     @Published private(set) var tvIsDisconnecting = false
     @Published private(set) var tvIsWakingOnLAN = false
+    @Published private(set) var tvFinderIsSearching = false
+    @Published private(set) var tvFinderTVsFound = [TVCommander]()
     @Published private(set) var tvAuthStatus = TVAuthStatus.none
     @Published private(set) var tvError: Error?
     private var tvCommander: TVCommander?
+    private var tvFinder: TVFinder?
 
     var connectEnabled: Bool {
         !tvIsConnecting && !tvIsConnected
@@ -122,10 +125,19 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
 
     func userTappedWakeOnLAN() {
         tvIsWakingOnLAN = true
-        TVCommander.wakeOnLAN(device: tvWakeOnLANDevice, queue: .main) { 
+        TVCommander.wakeOnLAN(device: tvWakeOnLANDevice, queue: .main) {
             [weak self] error in
             self?.tvIsWakingOnLAN = false
             self?.tvError = error
+        }
+    }
+
+    func userTappedScanForTVs() {
+        if tvFinder == nil {
+            tvFinder = TVFinder(appName: appName, delegate: self)
+            tvFinder?.findTVs(id: nil)
+        } else {
+            tvFinder?.stopFindingTVs()
         }
     }
 
@@ -167,5 +179,19 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate {
 
     func tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError) {
         tvError = error
+    }
+
+    // MARK: TVFinderDelegate
+
+    func tvFinder(_ tvFinder: TVFinder, searchStateDidUpdate isSearching: Bool) {
+        tvFinderIsSearching = isSearching
+        if !isSearching {
+            self.tvFinder = nil
+            tvFinderTVsFound.removeAll()
+        }
+    }
+
+    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TVCommander]) {
+        tvFinderTVsFound = tvs
     }
 }
