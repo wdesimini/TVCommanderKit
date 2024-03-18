@@ -56,6 +56,16 @@ struct ContentView: View {
                     Button("Wake On LAN", action: contentViewModel.userTappedWakeOnLAN)
                         .disabled(!contentViewModel.wakeOnLANEnabled)
                 }
+                Section("Find TV") {
+                    Button(contentViewModel.tvFinderIsSearching ? "Stop" : "Scan", action: contentViewModel.userTappedScanForTVs)
+                    List(contentViewModel.tvFinderTVsFound, id: \.tvConfig.ipAddress) { commander in
+                        VStack(alignment: .leading) {
+                            Text(commander.tvConfig.ipAddress)
+                            Text(commander.tvConfig.id ?? "(no id)")
+                                .font(.caption)
+                        }
+                    }
+                }
             }
             .navigationBarTitle("TV Controller")
             .alert(isPresented: $isPresentingError) {

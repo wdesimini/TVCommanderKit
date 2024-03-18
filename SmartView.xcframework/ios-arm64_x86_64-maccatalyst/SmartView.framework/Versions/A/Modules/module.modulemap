@@ -1,0 +1,18 @@
+
+framework module SmartView {
+    umbrella header "SmartView.h"
+
+
+    export *
+    module * { export * }
+
+    explicit module PrivateCode {
+    header "GCDAsyncUdpSocket.h"
+    export *
+    }
+}
+
+module SmartView.Swift {
+  header "SmartView-Swift.h"
+  requires objc
+}

@@ -1,0 +1,530 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.7.1 (swiftlang-5.7.1.135.3 clang-1400.0.29.51)
+// swift-module-flags: -target x86_64-apple-ios8.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name SmartView
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+import SystemConfiguration.CaptiveNetwork
+import CoreBluetooth
+import CoreFoundation
+import Darwin
+import Foundation
+import SmartView.PrivateCode
+import Security
+@_exported import SmartView
+import Swift
+import SystemConfiguration
+import UIKit
+import _Concurrency
+import _StringProcessing
+@_hasMissingDesignatedInitializers @objc open class ChannelClient : ObjectiveC.NSObject {
+  open var id: Swift.String {
+    get
+  }
+  open var connectTime: Foundation.Date? {
+    get
+  }
+  open var attributes: Swift.AnyObject? {
+    get
+  }
+  open var isHost: Swift.Bool {
+    get
+  }
+  @objc override dynamic open var description: Swift.String {
+    @objc get
+  }
+  @objc deinit
+}
+public func == (lhs: SmartView.ChannelClient, rhs: SmartView.ChannelClient) -> Swift.Bool
+@_hasMissingDesignatedInitializers @objc open class Message : ObjectiveC.NSObject {
+  final public let event: Swift.String!
+  final public let from: Swift.String!
+  final public let data: Swift.AnyObject?
+  @objc deinit
+}
+@objc public protocol ConnectionDelegate {
+  @objc optional func onConnect(_ error: Foundation.NSError?)
+  @objc optional func onDisconnect(_ error: Foundation.NSError?)
+  @objc optional func onClientConnect(_ client: SmartView.ChannelClient)
+  @objc optional func onClientDisconnect(_ client: SmartView.ChannelClient)
+  @objc optional func onError(_ error: Foundation.NSError)
+  @objc optional func onReady()
+}
+@_hasMissingDesignatedInitializers @objc open class BasePlayer : ObjectiveC.NSObject {
+  weak open var connectionDelegate: SmartView.ConnectionDelegate?
+  @objc deinit
+  @objc open func disconnect(_ leaveHostRunning: Swift.Bool = true, completionHandler: ((_ error: Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func standbyConnect(_ screenSaverURL1: Foundation.URL? = nil, completionHandler: ((Foundation.NSError?) -> Swift.Void)?)
+  @objc open func standbyConnect(_ screenSaverURL1: Foundation.URL?, screenSaverURL2: Foundation.URL?, completionHandler: ((Foundation.NSError?) -> Swift.Void)?)
+  @objc open func standbyConnect(_ screenSaverURL1: Foundation.URL?, screenSaverURL2: Foundation.URL?, screenSaverURL3: Foundation.URL?, completionHandler: ((Foundation.NSError?) -> Swift.Void)?)
+  @objc open func setPlayerWatermark(_ watermarkUrl: Foundation.URL?)
+  @objc open func removePlayerWatermark()
+  @objc open func play()
+  @objc open func pause()
+  @objc open func stop()
+  @objc open func mute()
+  @objc open func unMute()
+  @objc open func previous()
+  @objc open func next()
+  @objc open func setVolume(_ volume: Swift.UInt8)
+  @objc open func volumeUp()
+  @objc open func volumeDown()
+  @objc open func getControlStatus()
+}
+@_hasMissingDesignatedInitializers @objc open class MediaPlayer : ObjectiveC.NSObject {
+  public struct PlayerNotice {
+    public static let PlayerStateKey: Swift.String
+    public static let VideoStateKey: Swift.String
+    public static let ErrorKey: Swift.String
+    public struct PlayerState {
+      public static let Play: Swift.String
+      public static let Pause: Swift.String
+      public static let Stop: Swift.String
+      public static let Mute: Swift.String
+      public static let Unmute: Swift.String
+      public static let FF: Swift.String
+      public static let RWD: Swift.String
+      public static let SeekTo: Swift.String
+      public static let SetVolume: Swift.String
+    }
+    public struct VideoState {
+      public static let StreamCompleted: Swift.String
+      public static let CurrentPlayTime: Swift.String
+      public static let TotalDuration: Swift.String
+      public static let BufferingStart: Swift.String
+      public static let BufferingProgress: Swift.String
+      public static let BufferingComplete: Swift.String
+      public static let VideoIsCued: Swift.String
+    }
+  }
+  open var service: SmartView.Service {
+    get
+  }
+  open var connected: Swift.Bool {
+    get
+  }
+  @objc deinit
+}
+extension SmartView.MediaPlayer : SmartView.ChannelDelegate {
+  @objc dynamic public func onMessage(_ message: SmartView.Message)
+  @objc dynamic public func onConnect(_ client: SmartView.ChannelClient?, error: Foundation.NSError?)
+  @objc dynamic public func onDisconnect(_ client: SmartView.ChannelClient?, error: Foundation.NSError?)
+  @objc dynamic public func onClientConnect(_ client: SmartView.ChannelClient)
+  @objc dynamic public func onClientDisconnect(_ client: SmartView.ChannelClient)
+  @objc dynamic public func onError(_ error: Foundation.NSError)
+  @objc dynamic public func onReady()
+}
+public let WebsocketDidConnectNotification: Swift.String
+public let WebsocketDidDisconnectNotification: Swift.String
+public let WebsocketDisconnectionErrorKeyName: Swift.String
+public protocol WebSocketDelegate : AnyObject {
+  func websocketDidConnect(_ socket: SmartView.WebSocket)
+  func websocketDidDisconnect(_ socket: SmartView.WebSocket, error: Foundation.NSError?)
+  func websocketDidReceiveMessage(_ socket: SmartView.WebSocket, text: Swift.String)
+  func websocketDidReceiveData(_ socket: SmartView.WebSocket, data: Foundation.Data)
+}
+public protocol WebSocketPongDelegate : AnyObject {
+  func websocketDidReceivePong(socket: SmartView.WebSocket, data: Foundation.Data?)
+}
+@objc public class WebSocket : ObjectiveC.NSObject, Foundation.StreamDelegate {
+  public enum CloseCode : Swift.UInt16 {
+    case normal
+    case goingAway
+    case protocolError
+    case protocolUnhandledType
+    case noStatusReceived
+    case encoding
+    case policyViolated
+    case messageTooBig
+    public init?(rawValue: Swift.UInt16)
+    public typealias RawValue = Swift.UInt16
+    public var rawValue: Swift.UInt16 {
+      get
+    }
+  }
+  public static let ErrorDomain: Swift.String
+  public var callbackQueue: Dispatch.DispatchQueue
+  weak public var delegate: SmartView.WebSocketDelegate?
+  weak public var pongDelegate: SmartView.WebSocketPongDelegate?
+  public var onConnect: ((Swift.Void) -> Swift.Void)?
+  public var onDisconnect: ((Foundation.NSError?) -> Swift.Void)?
+  public var onText: ((Swift.String) -> Swift.Void)?
+  public var onData: ((Foundation.Data) -> Swift.Void)?
+  public var onPong: ((Foundation.Data?) -> Swift.Void)?
+  public var headers: [Swift.String : Swift.String]
+  public var voipEnabled: Swift.Bool
+  public var disableSSLCertValidation: Swift.Bool
+  public var security: SmartView.SSLSecurity?
+  public var enabledSSLCipherSuites: [Security.SSLCipherSuite]?
+  public var origin: Swift.String?
+  public var timeout: Swift.Int
+  public var isConnected: Swift.Bool {
+    get
+  }
+  public var currentURL: Foundation.URL {
+    get
+  }
+  public init(url: Foundation.URL, protocols: [Swift.String]? = nil)
+  convenience public init(url: Foundation.URL, writeQueueQOS: Foundation.QualityOfService, protocols: [Swift.String]? = nil)
+  public func connect()
+  public func disconnect(forceTimeout: Foundation.TimeInterval? = nil, closeCode: Swift.UInt16 = CloseCode.normal.rawValue)
+  public func write(string: Swift.String, completion: (() -> ())? = nil)
+  public func write(data: Foundation.Data, completion: (() -> ())? = nil)
+  public func write(ping: Foundation.Data, completion: (() -> ())? = nil)
+  @objc public func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event)
+  @objc deinit
+}
+@objc public protocol AudioPlayerDelegate {
+  @objc optional func onBufferingStart()
+  @objc optional func onBufferingComplete()
+  @objc optional func onBufferingProgress(_ progress: Swift.Int)
+  @objc optional func onCurrentPlayTime(_ progress: Swift.Int)
+  @objc optional func onStreamingStarted(_ duration: Swift.Int)
+  @objc optional func onStreamCompleted()
+  @objc optional func onPlayerInitialized()
+  @objc optional func onPlayerChange(_ playerType: Swift.String)
+  @objc optional func onPlay()
+  @objc optional func onPause()
+  @objc optional func onStop()
+  @objc optional func onMute()
+  @objc optional func onUnMute()
+  @objc optional func onNext()
+  @objc optional func onPrevious()
+  @objc optional func onControlStatus(_ volLevel: Swift.Int, muteStatus: Swift.Bool, shuffleStatus: Swift.Bool, mode: Swift.String)
+  @objc optional func onVolumeChange(_ volLevel: Swift.Int)
+  @objc optional func onAddToList(_ enqueuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onRemoveFromList(_ dequeuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onClearList()
+  @objc optional func onGetList(_ queueList: [Swift.String : Swift.AnyObject])
+  @objc optional func onShuffle(_ status: Swift.Bool)
+  @objc optional func onRepeat(_ mode: Swift.String)
+  @objc optional func onCurrentPlaying(_ currentItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onApplicationSuspend()
+  @objc optional func onApplicationResume()
+  @objc optional func onError(_ error: Foundation.NSError)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc open class AudioPlayer : SmartView.BasePlayer {
+  weak open var playerDelegate: SmartView.AudioPlayerDelegate?
+  @objc public enum AudioRepeatMode : Swift.Int {
+    case repeatOff
+    case repeatSingle
+    case repeatAll
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc deinit
+  @objc open func playContent(_ contentURL: Foundation.URL, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func playContent(_ contentURL: Foundation.URL?, title: Swift.String, albumName: Swift.String, albumArtUrl: Foundation.URL?, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func seek(_ time: Foundation.TimeInterval)
+  @objc open func resumeApplicationInForeground(_ completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func `repeat`()
+  @objc open func setRepeat(_ mode: SmartView.AudioPlayer.AudioRepeatMode)
+  @objc open func shuffle()
+  @objc open func setShuffle(_ mode: Swift.Bool)
+  @objc open func getList()
+  @objc open func clearList()
+  @objc open func removeFromList(_ contentURL: Foundation.URL)
+  @objc open func addToList(_ contentURL: Foundation.URL, title: Swift.String = "", albumName: Swift.String = "", albumArtUrl: Foundation.URL = URL(fileURLWithPath: ""))
+  @objc public func addToList(_ arrayDictofData: [[Swift.String : Swift.AnyObject]])
+  @objc open func onMessage(_ notification: Foundation.Notification!)
+}
+public enum MessageTarget : Swift.String {
+  case All
+  case Host
+  case Broadcast
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum ChannelEvent : Swift.String {
+  case Connect
+  case Disconnect
+  case ClientConnect
+  case ClientDisconnect
+  case Message
+  case Data
+  case Unauthorized
+  case Timeout
+  case Error
+  case Ready
+  case Ping
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@objc public protocol ChannelDelegate {
+  @objc optional func onConnect(_ client: SmartView.ChannelClient?, error: Foundation.NSError?)
+  @objc optional func onReady()
+  @objc optional func onDisconnect(_ client: SmartView.ChannelClient?, error: Foundation.NSError?)
+  @objc optional func onMessage(_ message: SmartView.Message)
+  @objc optional func onData(_ message: SmartView.Message, payload: Foundation.Data)
+  @objc optional func onClientConnect(_ client: SmartView.ChannelClient)
+  @objc optional func onClientDisconnect(_ client: SmartView.ChannelClient)
+  @objc optional func onError(_ error: Foundation.NSError)
+}
+@_hasMissingDesignatedInitializers @objc open class Channel : ObjectiveC.NSObject {
+  open var isConnected: Swift.Bool {
+    get
+  }
+  open var uri: Swift.String! {
+    get
+  }
+  open var service: SmartView.Service! {
+    get
+  }
+  open var me: SmartView.ChannelClient!
+  open var completionQueue: Dispatch.DispatchQueue?
+  weak open var delegate: SmartView.ChannelDelegate?
+  open var connectionTimeout: Swift.Double {
+    get
+    set
+  }
+  open func connect()
+  open func connect(_ attributes: [Swift.String : Swift.String]?)
+  open func connect(_ attributes: [Swift.String : Swift.String]?, completionHandler: ((_ client: SmartView.ChannelClient?, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func disconnect(_ completionHandler: ((_ client: SmartView.ChannelClient?, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func disconnect()
+  open func publish(event: Swift.String, message: Swift.AnyObject?)
+  open func publish(event: Swift.String, message: Swift.AnyObject?, data: Foundation.Data)
+  open func publish(event: Swift.String, message: Swift.AnyObject?, target: Swift.AnyObject)
+  open func publish(event: Swift.String, message: Swift.AnyObject?, data: Foundation.Data, target: Swift.AnyObject)
+  open func getClients() -> [SmartView.ChannelClient]
+  open func on(_ notificationName: Swift.String, performClosure: @escaping (Foundation.Notification?) -> Swift.Void) -> Swift.AnyObject?
+  open func off(_ observer: Swift.AnyObject)
+  @objc override dynamic open var description: Swift.String {
+    @objc get
+  }
+  open func setSecurityMode(security: Swift.Bool, completionHandler: @escaping (_ isSupport: Swift.Bool, _ error: Foundation.NSError?) -> Swift.Void)
+  @objc deinit
+}
+@objc public protocol VideoPlayerDelegate {
+  @objc optional func onBufferingStart()
+  @objc optional func onBufferingComplete()
+  @objc optional func onBufferingProgress(_ progress: Swift.Int)
+  @objc optional func onCurrentPlayTime(_ progress: Swift.Int)
+  @objc optional func onStreamingStarted(_ duration: Swift.Int)
+  @objc optional func onStreamCompleted()
+  @objc optional func onPlayerInitialized()
+  @objc optional func onPlayerChange(_ playerType: Swift.String)
+  @objc optional func onPlay()
+  @objc optional func onPause()
+  @objc optional func onStop()
+  @objc optional func onForward()
+  @objc optional func onRewind()
+  @objc optional func onMute()
+  @objc optional func onUnMute()
+  @objc optional func onNext()
+  @objc optional func onPrevious()
+  @objc optional func onControlStatus(_ volLevel: Swift.Int, muteStatus: Swift.Bool, mode: Swift.String)
+  @objc optional func onVolumeChange(_ volLevel: Swift.Int)
+  @objc optional func onAddToList(_ enqueuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onRemoveFromList(_ dequeuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onClearList()
+  @objc optional func onGetList(_ queueList: [Swift.String : Swift.AnyObject])
+  @objc optional func onRepeat(_ mode: Swift.String)
+  @objc optional func onCurrentPlaying(_ currentItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onApplicationSuspend()
+  @objc optional func onApplicationResume()
+  @objc optional func onError(_ error: Foundation.NSError)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc open class VideoPlayer : SmartView.BasePlayer {
+  weak open var playerDelegate: SmartView.VideoPlayerDelegate?
+  @objc public enum VideoRepeatMode : Swift.Int {
+    case repeatOff
+    case repeatSingle
+    case repeatAll
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc deinit
+  @objc open func playContent(_ contentURL: Foundation.URL, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func playContent(_ contentURL: Foundation.URL?, title: Swift.String, thumbnailURL: Foundation.URL?, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func forward()
+  @objc open func rewind()
+  @objc open func seek(_ time: Foundation.TimeInterval)
+  @objc open func `repeat`()
+  @objc open func setRepeat(_ mode: SmartView.VideoPlayer.VideoRepeatMode)
+  @objc open func resumeApplicationInForeground(_ completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func getList()
+  @objc open func clearList()
+  @objc open func removeFromList(_ contentURL: Foundation.URL)
+  @objc open func addToList(_ contentURL: Foundation.URL, title: Swift.String = "", thumbnailURL: Foundation.URL = URL(fileURLWithPath: ""))
+  @objc public func addToList(_ arrayDictofData: [[Swift.String : Swift.AnyObject]])
+  @objc open func onMessage(_ notification: Foundation.Notification!)
+}
+@objc public protocol PhotoPlayerDelegate {
+  @objc optional func onPlayerInitialized()
+  @objc optional func onPlayerChange(_ playerType: Swift.String)
+  @objc optional func onPlay()
+  @objc optional func onPause()
+  @objc optional func onStop()
+  @objc optional func onMute()
+  @objc optional func onUnMute()
+  @objc optional func onNext()
+  @objc optional func onPrevious()
+  @objc optional func onControlStatus(_ volLevel: Swift.Int, muteStatus: Swift.Bool)
+  @objc optional func onVolumeChange(_ volLevel: Swift.Int)
+  @objc optional func onAddToList(_ enqueuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onRemoveFromList(_ dequeuedItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onClearList()
+  @objc optional func onGetList(_ queueList: [Swift.String : Swift.AnyObject])
+  @objc optional func onCurrentPlaying(_ currentItem: [Swift.String : Swift.AnyObject])
+  @objc optional func onApplicationSuspend()
+  @objc optional func onApplicationResume()
+  @objc optional func onError(_ error: Foundation.NSError)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc open class PhotoPlayer : SmartView.BasePlayer {
+  weak open var playerDelegate: SmartView.PhotoPlayerDelegate?
+  @objc deinit
+  @objc open func playContent(_ contentURL: Foundation.URL, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func playContent(_ contentURL: Foundation.URL?, title: Swift.String, completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func setBackgroundMusic(_ contentURL: Foundation.URL)
+  @objc open func stopBackgroundMusic()
+  @objc open func resumeApplicationInForeground(_ completionHandler: ((Foundation.NSError?) -> Swift.Void)? = nil)
+  @objc open func getList()
+  @objc open func clearList()
+  @objc open func removeFromList(_ contentURL: Foundation.URL)
+  @objc open func addToList(_ contentURL: Foundation.URL, title: Swift.String = "")
+  @objc public func addToList(_ arrayDictofData: [[Swift.String : Swift.AnyObject]])
+  @objc open func onMessage(_ notification: Foundation.Notification!)
+}
+public let MSDidFindService: Swift.String
+public let MSDidRemoveService: Swift.String
+public let MSDidStopSearch: Swift.String
+public let MSDidStartSearch: Swift.String
+public let MSDidFoundUsingBLE: Swift.String
+@objc public enum ServiceSearchDiscoveryType : Swift.Int {
+  case LAN
+  case CLOUD
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public protocol ServiceSearchDelegate {
+  @objc optional func onServiceFound(_ service: SmartView.Service)
+  @objc optional func onServiceLost(_ service: SmartView.Service)
+  @objc optional func onStop()
+  @objc optional func onStart()
+  @objc optional func onFoundOnlyBLE(_ NameOfTV: Swift.String)
+  @objc optional func onFoundOtherNetwork(_ NameOfTV: Swift.String)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc open class ServiceSearch : ObjectiveC.NSObject {
+  @objc weak open var delegate: SmartView.ServiceSearchDelegate?
+  @objc open var isSearching: Swift.Bool {
+    @objc get
+  }
+  @objc open func getServices() -> [SmartView.Service]
+  @objc open func on(_ notificationName: Swift.String, performClosure: @escaping (Foundation.Notification?) -> Swift.Void) -> Swift.AnyObject
+  @objc open func off(_ observer: Swift.AnyObject)
+  @objc open func start()
+  @objc open func start(_ showStandByTv: Swift.Bool = true)
+  @objc open func isSearchingBLE() -> Swift.Bool
+  @objc open func startUsingBLE() -> Swift.Bool
+  @objc open func stopUsingBLE() -> Swift.Bool
+  @objc open func stop()
+  @objc open func getStandByMode() -> Swift.Bool
+  @objc deinit
+}
+extension SmartView.ServiceSearch {
+  @objc dynamic open func clearStandbyDevices()
+}
+public class SSLCert {
+  public init(data: Foundation.Data)
+  public init(key: Security.SecKey)
+  @objc deinit
+}
+public class SSLSecurity {
+  public var validatedDN: Swift.Bool
+  convenience public init(usePublicKeys: Swift.Bool = false)
+  public init(certs: [SmartView.SSLCert], usePublicKeys: Swift.Bool)
+  public func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
+  @objc deinit
+}
+public typealias GetServiceCompletionHandler = (_ service: SmartView.Service?, _ error: Foundation.NSError?) -> Swift.Void
+@_hasMissingDesignatedInitializers @objc open class Service : ObjectiveC.NSObject {
+  open var discoveryType: SmartView.ServiceSearchDiscoveryType {
+    get
+  }
+  open var id: Swift.String {
+    get
+  }
+  open var uri: Swift.String {
+    get
+  }
+  open var name: Swift.String {
+    get
+  }
+  open var version: Swift.String {
+    get
+  }
+  open var type: Swift.String {
+    get
+  }
+  @objc override dynamic open var description: Swift.String {
+    @objc get
+  }
+  open func getDeviceInfo(_ timeout: Swift.Int, completionHandler: @escaping (_ deviceInfo: [Swift.String : Swift.AnyObject]?, _ error: Foundation.NSError?) -> Swift.Void)
+  open func createApplication(_ id: Swift.AnyObject, channelURI: Swift.String, args: [Swift.String : Swift.AnyObject]?) -> SmartView.Application?
+  open func createChannel(_ channelURI: Swift.String) -> SmartView.Channel
+  open func createVideoPlayer(_ appName: Swift.String) -> SmartView.VideoPlayer
+  open func createAudioPlayer(_ appName: Swift.String) -> SmartView.AudioPlayer
+  open func createPhotoPlayer(_ appName: Swift.String) -> SmartView.PhotoPlayer
+  @objc open class func search() -> SmartView.ServiceSearch
+  open class func getByURI(_ uri: Swift.String, timeout: Foundation.TimeInterval, completionHandler: @escaping (_ service: SmartView.Service?, _ error: Foundation.NSError?) -> Swift.Void)
+  open class func getById(_ id: Swift.String, completionHandler: @escaping (_ service: SmartView.Service?, _ error: Foundation.NSError?) -> Swift.Void)
+  open class func WakeOnWirelessLan(_ macAddr: Swift.String)
+  open class func WakeOnWirelessAndConnect(_ macAddr: Swift.String, uri: Swift.String, completionHandler: @escaping (_ service: SmartView.Service?, _ error: Foundation.NSError?) -> Swift.Void)
+  open class func WakeOnWirelessAndConnect(_ macAddr: Swift.String, uri: Swift.String, timeOut: Foundation.TimeInterval, completionHandler: @escaping (_ service: SmartView.Service?, _ error: Foundation.NSError?) -> Swift.Void)
+  open func isSecurityModeSupported(completionHandler: @escaping (_ isSupport: Swift.Bool, _ error: Foundation.NSError?) -> Swift.Void)
+  open func remove()
+  open func isDMPSupported() -> Swift.Bool
+  @objc deinit
+}
+public func == (lhs: SmartView.Service, rhs: SmartView.Service) -> Swift.Bool
+@_hasMissingDesignatedInitializers @objc open class Application : SmartView.Channel {
+  open var id: Swift.String! {
+    get
+  }
+  open var args: [Swift.String : Swift.AnyObject]? {
+    get
+  }
+  public static let BUNDLE_IDENTIFIER: Swift.String
+  public static let PROPERTY_VALUE_LIBRARY: Swift.String
+  @objc deinit
+  open func getInfo(_ completionHandler: @escaping (_ info: [Swift.String : Swift.AnyObject]?, _ error: Foundation.NSError?) -> Swift.Void)
+  open func start(_ completionHandler: ((_ success: Swift.Bool, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func stop(_ completionHandler: ((_ success: Swift.Bool, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func install(_ completionHandler: ((_ success: Swift.Bool, _ error: Foundation.NSError?) -> Swift.Void)?)
+  override open func connect(_ attributes: [Swift.String : Swift.String]?, completionHandler: ((_ client: SmartView.ChannelClient?, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func disconnect(leaveHostRunning: Swift.Bool, completionHandler: ((_ client: SmartView.ChannelClient?, _ error: Foundation.NSError?) -> Swift.Void)?)
+  open func disconnect(leaveHostRunning: Swift.Bool)
+  override open func disconnect(_ completionHandler: ((_ client: SmartView.ChannelClient?, _ error: Foundation.NSError?) -> Swift.Void)?)
+}
+extension SmartView.WebSocket.CloseCode : Swift.Equatable {}
+extension SmartView.WebSocket.CloseCode : Swift.Hashable {}
+extension SmartView.WebSocket.CloseCode : Swift.RawRepresentable {}
+extension SmartView.AudioPlayer.AudioRepeatMode : Swift.Equatable {}
+extension SmartView.AudioPlayer.AudioRepeatMode : Swift.Hashable {}
+extension SmartView.AudioPlayer.AudioRepeatMode : Swift.RawRepresentable {}
+extension SmartView.MessageTarget : Swift.Equatable {}
+extension SmartView.MessageTarget : Swift.Hashable {}
+extension SmartView.MessageTarget : Swift.RawRepresentable {}
+extension SmartView.ChannelEvent : Swift.Equatable {}
+extension SmartView.ChannelEvent : Swift.Hashable {}
+extension SmartView.ChannelEvent : Swift.RawRepresentable {}
+extension SmartView.VideoPlayer.VideoRepeatMode : Swift.Equatable {}
+extension SmartView.VideoPlayer.VideoRepeatMode : Swift.Hashable {}
+extension SmartView.VideoPlayer.VideoRepeatMode : Swift.RawRepresentable {}
+extension SmartView.ServiceSearchDiscoveryType : Swift.Equatable {}
+extension SmartView.ServiceSearchDiscoveryType : Swift.Hashable {}
+extension SmartView.ServiceSearchDiscoveryType : Swift.RawRepresentable {}
