@@ -5,6 +5,7 @@
 ## Table of Contents
 - [Usage](#usage)
 - [Delegate Methods](#delegate-methods)
+- [Finding TVs](#finding-tvs)
 - [Establishing Connection](#establishing-connection)
 - [Authorizing Application with TV](#authorizing-application-with-tv)
 - [Sending Remote Control Commands](#sending-remote-control-commands)
@@ -63,6 +64,29 @@ The TVCommanderDelegate protocol provides methods to receive updates and events 
 - `tvCommander(_ tvCommander: TVCommander, didWriteRemoteCommand command: TVRemoteCommand)`: Called when a remote control command is sent to the TV.
 
 - `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`: Called when the TVCommander encounters an error.
+
+## Finding TVs
+
+The TVCommanderKit SDK includes a `TVFinder` class that helps you discover Samsung Smart TVs on the network. You can use this class to search for TVs and obtain instances of `TVCommander` for each discovered TV.
+
+```swift
+let tvFinder = TVFinder(appName: "your_app_name", delegate: self)
+tvFinder.findTVs()
+```
+
+You can also specify a TV to search for using its ID:
+
+```swift
+tvFinder.findTVs(id: "your_tv_id")
+```
+
+To stop searching for TVs, call the stopFindingTVs() method:
+
+```swift
+tvFinder.stopFindingTVs()
+```
+
+You need to conform to the `TVFinderDelegate` protocol to receive updates on the search state and discovered TVs.
 
 ## Establishing Connection
 
