@@ -17,7 +17,7 @@ final class TVFinderTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         delegate = TVFinderDelegateMock()
-        finder = TVFinder(appName: "Test", delegate: delegate)
+        finder = TVFinder(delegate: delegate)
     }
 
     override func tearDown() {
@@ -51,19 +51,19 @@ final class TVFinderTests: XCTestCase {
         XCTAssertFalse(finder.isSearching)
         XCTAssertNil(finder.tvIdToFind)
         XCTAssertEqual(delegate.tvsFound.count, 1)
-        XCTAssertEqual(delegate.tvsFound[0].tvConfig.id, id)
+        XCTAssertEqual(delegate.tvsFound[0].id, id)
     }
 }
 
 class TVFinderDelegateMock: TVFinderDelegate {
-    private(set) var tvsFound = [TVCommander]()
+    private(set) var tvsFound = [TV]()
     var onSearchEnded: (() -> Void)?
 
     func tvFinder(_ tvFinder: TVFinder, searchStateDidUpdate isSearching: Bool) {
         if !isSearching { onSearchEnded?() }
     }
 
-    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TVCommander]) {
+    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TV]) {
         tvsFound = tvs
     }
 }

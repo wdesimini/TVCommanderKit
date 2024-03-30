@@ -72,6 +72,23 @@ extension String {
     }
 }
 
+// MARK: TV
+
+extension TV {
+    func addingDevice(_ device: TV.Device) -> TV {
+        TV(
+            device: device,
+            id: id,
+            isSupport: isSupport,
+            name: name,
+            remote: remote,
+            type: type,
+            uri: uri,
+            version: version
+        )
+    }
+}
+
 // MARK: TVKeyboardLayout
 
 extension TVKeyboardLayout {

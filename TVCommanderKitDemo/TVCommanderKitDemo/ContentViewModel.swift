@@ -23,7 +23,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
     @Published private(set) var tvIsDisconnecting = false
     @Published private(set) var tvIsWakingOnLAN = false
     @Published private(set) var tvFinderIsSearching = false
-    @Published private(set) var tvFinderTVsFound = [TVCommander]()
+    @Published private(set) var tvFinderTVsFound = [TV]()
     @Published private(set) var tvAuthStatus = TVAuthStatus.none
     @Published private(set) var tvError: Error?
     private var tvCommander: TVCommander?
@@ -134,7 +134,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
 
     func userTappedScanForTVs() {
         if tvFinder == nil {
-            tvFinder = TVFinder(appName: appName, delegate: self)
+            tvFinder = TVFinder(delegate: self)
             tvFinder?.findTVs(id: nil)
         } else {
             tvFinder?.stopFindingTVs()
@@ -191,7 +191,31 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
         }
     }
 
-    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TVCommander]) {
+    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TV]) {
         tvFinderTVsFound = tvs
+    }
+}
+
+class TVViewModel: ObservableObject {
+    private let tvFetcher = TVFetcher()
+
+    @Published private(set) var tv: TV
+
+    init(tv: TV) {
+        self.tv = tv
+    }
+
+    func fetchTVDevice() {
+        tvFetcher.fetchDevice(for: tv) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let tvFetched):
+                    self.tv = tvFetched
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
     }
 }

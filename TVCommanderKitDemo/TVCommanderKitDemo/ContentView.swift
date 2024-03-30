@@ -9,11 +9,23 @@ import SwiftUI
 import TVCommanderKit
 
 struct ContentView: View {
+    enum Route: Hashable {
+        case tv(TV)
+
+        func hash(into hasher: inout Hasher) {
+            switch self {
+            case .tv(let tv):
+                hasher.combine(tv.id)
+            }
+        }
+    }
+
     @StateObject var contentViewModel = ContentViewModel()
     @State private var isPresentingError = false
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $path) {
             Form {
                 Section("Connect / Disconnect TV") {
                     TextField("App Name", text: $contentViewModel.appName)
@@ -58,16 +70,26 @@ struct ContentView: View {
                 }
                 Section("Find TV") {
                     Button(contentViewModel.tvFinderIsSearching ? "Stop" : "Scan", action: contentViewModel.userTappedScanForTVs)
-                    List(contentViewModel.tvFinderTVsFound, id: \.tvConfig.ipAddress) { commander in
-                        VStack(alignment: .leading) {
-                            Text(commander.tvConfig.ipAddress)
-                            Text(commander.tvConfig.id ?? "(no id)")
-                                .font(.caption)
+                    List(contentViewModel.tvFinderTVsFound) { tv in
+                        Button {
+                            path.append(Route.tv(tv))
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text(tv.name)
+                                Text(tv.uri)
+                                    .font(.caption)
+                            }
                         }
                     }
                 }
             }
             .navigationBarTitle("TV Controller")
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .tv(let tv):
+                    TVView(tv: tv)
+                }
+            }
             .alert(isPresented: $isPresentingError) {
                 Alert(
                     title: Text("Error"),
@@ -93,6 +115,36 @@ struct ContentView: View {
         }
     }
 }
+
+struct TVView: View {
+    @StateObject private var viewModel: TVViewModel
+
+    init(tv: TV) {
+        _viewModel = .init(wrappedValue: .init(tv: tv))
+    }
+
+    var body: some View {
+        Form {
+            Section("TV") {
+                Text("id: \(viewModel.tv.id)")
+                Text("type: \(viewModel.tv.type)")
+                Text("uri: \(viewModel.tv.uri)")
+            }
+            Section("Device") {
+                Button("Fetch Device") {
+                    viewModel.fetchTVDevice()
+                }
+                if let device = viewModel.tv.device {
+                    Text("powerState: \(device.powerState ?? "")")
+                    Text("tokenAuthSupport: \(device.tokenAuthSupport)")
+                    Text("wifiMac: \(device.wifiMac)")
+                }
+            }
+        }
+        .navigationTitle(viewModel.tv.name)
+    }
+}
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

@@ -10,18 +10,16 @@ import SmartView
 
 public protocol TVFinderDelegate: AnyObject {
     func tvFinder(_ tvFinder: TVFinder, searchStateDidUpdate isSearching: Bool)
-    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TVCommander])
+    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TV])
 }
 
 public class TVFinder {
-    private let appName: String
     private var search: TVSearcher!
     private unowned let delegate: TVFinderDelegate
     public private(set) var isSearching = false
     public private(set) var tvIdToFind: String?
 
-    public init(appName: String, delegate: TVFinderDelegate) {
-        self.appName = appName
+    public init(delegate: TVFinderDelegate) {
         self.delegate = delegate
         self.search = TVSearcher(
             onSearchingStateUpdate: { [weak self] in
@@ -55,13 +53,12 @@ public class TVFinder {
 
     private func onServicesFound(_ services: [Service]) {
         // convert services found
-        let tvs: [TVCommander] = services.compactMap { service in
-            guard let ipAddress = URL(string: service.uri).flatMap(\.host) else { return nil }
-            return try? TVCommander(tvId: service.id, tvIPAddress: ipAddress, appName: appName)
+        let tvs: [TV] = services.map {
+            TV(id: $0.id, name: $0.name, type: $0.type, uri: $0.uri)
         }
         delegate.tvFinder(self, didFind: tvs)
         // stop search if tv to find was found
-        if let tvIdToFind, services.contains(where: { $0.id == tvIdToFind }) {
+        if let tvIdToFind, tvs.contains(where: { $0.id == tvIdToFind }) {
             stopFindingTVs()
         }
     }

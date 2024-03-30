@@ -6,6 +6,7 @@
 - [Usage](#usage)
 - [Delegate Methods](#delegate-methods)
 - [Finding TVs](#finding-tvs)
+- [Fetching TV Device Info](#fetching-tv-device-info)
 - [Establishing Connection](#establishing-connection)
 - [Authorizing Application with TV](#authorizing-application-with-tv)
 - [Sending Remote Control Commands](#sending-remote-control-commands)
@@ -70,7 +71,7 @@ The TVCommanderDelegate protocol provides methods to receive updates and events 
 The TVCommanderKit SDK includes a `TVFinder` class that helps you discover Samsung Smart TVs on the network. You can use this class to search for TVs and obtain instances of `TVCommander` for each discovered TV.
 
 ```swift
-let tvFinder = TVFinder(appName: "your_app_name", delegate: self)
+let tvFinder = TVFinder(delegate: self)
 tvFinder.findTVs()
 ```
 
@@ -87,6 +88,27 @@ tvFinder.stopFindingTVs()
 ```
 
 You need to conform to the `TVFinderDelegate` protocol to receive updates on the search state and discovered TVs.
+
+## Fetching TV Device Info
+
+Upon finding `TV`s using the `TVFinder` class, you can also fetch device info using the `TVFetcher`.
+
+```swift
+let tvFetcher = TVFetcher(session: .shared) // use custom URLSession for mocking, etc
+``` 
+
+Invoking the `fetchDevice(for:)` method will return either an updated `TV` object (with device info injected) or a `TVFetcherError`.
+
+```swift
+tvFetcher.fetchDevice(for: tv) { result in
+    switch result {
+    case .success(let tvFetched):
+        // use updated tv
+    case .failure(let error):
+        // handle fetch error
+    }
+}
+```
 
 ## Establishing Connection
 
