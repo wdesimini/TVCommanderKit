@@ -43,6 +43,10 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         )
     }
 
+    public convenience init(tv: TV, appName: String, authToken: TVAuthToken? = nil) throws {
+        try self.init(tvId: tv.id, tvIPAddress: tv.device?.ip ?? "", appName: appName, authToken: authToken)
+    }
+
     // MARK: Establish WebSocket Connection
 
     public func connectToTV(certPinner: CertificatePinning? = nil) {

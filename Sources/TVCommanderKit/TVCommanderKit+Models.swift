@@ -334,4 +334,8 @@ public struct TVWakeOnLANDevice {
         self.broadcast = broadcast
         self.port = port
     }
+
+    public init(device: TV.Device, broadcast: String = "255.255.255.255", port: UInt16 = 9) {
+        self.init(mac: device.wifiMac, broadcast: broadcast, port: port)
+    }
 }
