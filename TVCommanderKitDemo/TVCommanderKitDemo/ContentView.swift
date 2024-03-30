@@ -58,10 +58,10 @@ struct ContentView: View {
                 }
                 Section("Find TV") {
                     Button(contentViewModel.tvFinderIsSearching ? "Stop" : "Scan", action: contentViewModel.userTappedScanForTVs)
-                    List(contentViewModel.tvFinderTVsFound, id: \.tvConfig.ipAddress) { commander in
+                    List(contentViewModel.tvFinderTVsFound) { tv in
                         VStack(alignment: .leading) {
-                            Text(commander.tvConfig.ipAddress)
-                            Text(commander.tvConfig.id ?? "(no id)")
+                            Text(tv.name)
+                            Text(tv.uri)
                                 .font(.caption)
                         }
                     }

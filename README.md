@@ -70,7 +70,7 @@ The TVCommanderDelegate protocol provides methods to receive updates and events 
 The TVCommanderKit SDK includes a `TVFinder` class that helps you discover Samsung Smart TVs on the network. You can use this class to search for TVs and obtain instances of `TVCommander` for each discovered TV.
 
 ```swift
-let tvFinder = TVFinder(appName: "your_app_name", delegate: self)
+let tvFinder = TVFinder(delegate: self)
 tvFinder.findTVs()
 ```
 

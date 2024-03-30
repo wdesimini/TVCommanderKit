@@ -23,7 +23,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
     @Published private(set) var tvIsDisconnecting = false
     @Published private(set) var tvIsWakingOnLAN = false
     @Published private(set) var tvFinderIsSearching = false
-    @Published private(set) var tvFinderTVsFound = [TVCommander]()
+    @Published private(set) var tvFinderTVsFound = [TV]()
     @Published private(set) var tvAuthStatus = TVAuthStatus.none
     @Published private(set) var tvError: Error?
     private var tvCommander: TVCommander?
@@ -134,7 +134,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
 
     func userTappedScanForTVs() {
         if tvFinder == nil {
-            tvFinder = TVFinder(appName: appName, delegate: self)
+            tvFinder = TVFinder(delegate: self)
             tvFinder?.findTVs(id: nil)
         } else {
             tvFinder?.stopFindingTVs()
@@ -191,7 +191,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
         }
     }
 
-    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TVCommander]) {
+    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TV]) {
         tvFinderTVsFound = tvs
     }
 }

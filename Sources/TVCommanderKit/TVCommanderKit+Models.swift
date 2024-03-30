@@ -7,6 +7,121 @@
 
 import Foundation
 
+public struct TV: Codable, Identifiable {
+    public struct Device: Codable {
+        public let countryCode: String?
+        public let description: String?
+        public let developerIp: String?
+        public let developerMode: String?
+        public let duid: String?
+        public let firmwareVersion: String?
+        public let frameTvSupport: String?
+        public let gamePadSupport: String?
+        public let id: String?
+        public let imeSyncedSupport: String?
+        public let ip: String?
+        public let language: String?
+        public let model: String?
+        public let modelName: String?
+        public let name: String?
+        public let networkType: String?
+        public let os: String?
+        public let powerState: String?
+        public let resolution: String?
+        public let smartHubAgreement: String?
+        public let ssid: String?
+        public let tokenAuthSupport: String
+        public let type: String?
+        public let udn: String?
+        public let voiceSupport: String?
+        public let wallScreenRatio: String?
+        public let wallService: String?
+        public let wifiMac: String
+
+        public init(countryCode: String? = nil, description: String? = nil, developerIp: String? = nil, developerMode: String? = nil, duid: String? = nil, firmwareVersion: String? = nil, frameTvSupport: String? = nil, gamePadSupport: String? = nil, id: String? = nil, imeSyncedSupport: String? = nil, ip: String? = nil, language: String? = nil, model: String? = nil, modelName: String? = nil, name: String? = nil, networkType: String? = nil, os: String? = nil, powerState: String? = nil, resolution: String? = nil, smartHubAgreement: String? = nil, ssid: String? = nil, tokenAuthSupport: String, type: String? = nil, udn: String? = nil, voiceSupport: String? = nil, wallScreenRatio: String? = nil, wallService: String? = nil, wifiMac: String) {
+            self.countryCode = countryCode
+            self.description = description
+            self.developerIp = developerIp
+            self.developerMode = developerMode
+            self.duid = duid
+            self.firmwareVersion = firmwareVersion
+            self.frameTvSupport = frameTvSupport
+            self.gamePadSupport = gamePadSupport
+            self.id = id
+            self.imeSyncedSupport = imeSyncedSupport
+            self.ip = ip
+            self.language = language
+            self.model = model
+            self.modelName = modelName
+            self.name = name
+            self.networkType = networkType
+            self.os = os
+            self.powerState = powerState
+            self.resolution = resolution
+            self.smartHubAgreement = smartHubAgreement
+            self.ssid = ssid
+            self.tokenAuthSupport = tokenAuthSupport
+            self.type = type
+            self.udn = udn
+            self.voiceSupport = voiceSupport
+            self.wallScreenRatio = wallScreenRatio
+            self.wallService = wallService
+            self.wifiMac = wifiMac
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case countryCode
+            case description
+            case developerIp = "developerIP"
+            case developerMode
+            case duid
+            case firmwareVersion
+            case frameTvSupport = "FrameTVSupport"
+            case gamePadSupport = "GamePadSupport"
+            case id
+            case imeSyncedSupport = "ImeSyncedSupport"
+            case ip
+            case language = "Language"
+            case model
+            case modelName
+            case name
+            case networkType
+            case os = "OS"
+            case powerState = "PowerState"
+            case resolution
+            case smartHubAgreement
+            case ssid
+            case tokenAuthSupport = "TokenAuthSupport"
+            case type
+            case udn
+            case voiceSupport = "VoiceSupport"
+            case wallScreenRatio = "WallScreenRatio"
+            case wallService = "WallService"
+            case wifiMac
+        }
+    }
+
+    public let device: Device?
+    public let id: String
+    public let isSupport: String?
+    public let name: String
+    public let remote: String?
+    public let type: String
+    public let uri: String
+    public let version: String?
+
+    public init(device: Device? = nil, id: String, isSupport: String? = nil, name: String, remote: String? = nil, type: String, uri: String, version: String? = nil) {
+        self.device = device
+        self.id = id
+        self.isSupport = isSupport
+        self.name = name
+        self.remote = remote
+        self.type = type
+        self.uri = uri
+        self.version = version
+    }
+}
+
 public enum TVAuthStatus {
     case none, allowed, denied
 }
