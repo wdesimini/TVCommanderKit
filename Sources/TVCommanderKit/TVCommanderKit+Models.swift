@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct TV: Codable, Identifiable {
-    public struct Device: Codable {
+public struct TV: Codable, Identifiable, Equatable {
+    public struct Device: Codable, Equatable {
         public let countryCode: String?
         public let description: String?
         public let developerIp: String?
@@ -38,7 +38,36 @@ public struct TV: Codable, Identifiable {
         public let wallService: String?
         public let wifiMac: String
 
-        public init(countryCode: String? = nil, description: String? = nil, developerIp: String? = nil, developerMode: String? = nil, duid: String? = nil, firmwareVersion: String? = nil, frameTvSupport: String? = nil, gamePadSupport: String? = nil, id: String? = nil, imeSyncedSupport: String? = nil, ip: String? = nil, language: String? = nil, model: String? = nil, modelName: String? = nil, name: String? = nil, networkType: String? = nil, os: String? = nil, powerState: String? = nil, resolution: String? = nil, smartHubAgreement: String? = nil, ssid: String? = nil, tokenAuthSupport: String, type: String? = nil, udn: String? = nil, voiceSupport: String? = nil, wallScreenRatio: String? = nil, wallService: String? = nil, wifiMac: String) {
+        public init(
+            countryCode: String? = nil,
+            description: String? = nil,
+            developerIp: String? = nil,
+            developerMode: String? = nil,
+            duid: String? = nil,
+            firmwareVersion: String? = nil,
+            frameTvSupport: String? = nil,
+            gamePadSupport: String? = nil,
+            id: String? = nil,
+            imeSyncedSupport: String? = nil,
+            ip: String? = nil,
+            language: String? = nil,
+            model: String? = nil,
+            modelName: String? = nil,
+            name: String? = nil,
+            networkType: String? = nil,
+            os: String? = nil,
+            powerState: String? = nil,
+            resolution: String? = nil,
+            smartHubAgreement: String? = nil,
+            ssid: String? = nil,
+            tokenAuthSupport: String,
+            type: String? = nil,
+            udn: String? = nil,
+            voiceSupport: String? = nil,
+            wallScreenRatio: String? = nil,
+            wallService: String? = nil,
+            wifiMac: String
+        ) {
             self.countryCode = countryCode
             self.description = description
             self.developerIp = developerIp
@@ -110,7 +139,16 @@ public struct TV: Codable, Identifiable {
     public let uri: String
     public let version: String?
 
-    public init(device: Device? = nil, id: String, isSupport: String? = nil, name: String, remote: String? = nil, type: String, uri: String, version: String? = nil) {
+    public init(
+        device: Device? = nil,
+        id: String,
+        isSupport: String? = nil,
+        name: String,
+        remote: String? = nil,
+        type: String,
+        uri: String,
+        version: String? = nil
+    ) {
         self.device = device
         self.id = id
         self.isSupport = isSupport
