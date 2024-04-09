@@ -218,4 +218,8 @@ class TVViewModel: ObservableObject {
             }
         }
     }
+
+    func cancelFetch() {
+        tvFetcher.cancelFetch()
+    }
 }

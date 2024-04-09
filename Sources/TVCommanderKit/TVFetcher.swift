@@ -9,6 +9,7 @@ import Foundation
 
 public class TVFetcher {
     private let session: URLSession
+    private var dataTask: URLSessionDataTask?
 
     public init(session: URLSession = .shared) {
         self.session = session
@@ -19,7 +20,8 @@ public class TVFetcher {
             completion(.failure(.invalidURL))
             return
         }
-        session.dataTask(with: url) { data, response, error in
+        cancelFetch()
+        dataTask = session.dataTask(with: url) { data, response, error in
             guard error == nil,
                   let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode),
@@ -33,6 +35,15 @@ public class TVFetcher {
             } catch {
                 completion(.failure(.unexpectedResponseBody(data)))
             }
-        }.resume()
+        }
+        dataTask?.resume()
+    }
+
+    public func cancelFetch() {
+        dataTask?.cancel()
+    }
+
+    deinit {
+        cancelFetch()
     }
 }

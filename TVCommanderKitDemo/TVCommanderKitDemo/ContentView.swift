@@ -134,6 +134,9 @@ struct TVView: View {
                 Button("Fetch Device") {
                     viewModel.fetchTVDevice()
                 }
+                Button("Cancel Fetch") {
+                    viewModel.cancelFetch()
+                }
                 if let device = viewModel.tv.device {
                     Text("powerState: \(device.powerState ?? "")")
                     Text("tokenAuthSupport: \(device.tokenAuthSupport)")
