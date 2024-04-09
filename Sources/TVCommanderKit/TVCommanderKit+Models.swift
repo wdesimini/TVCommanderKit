@@ -10,7 +10,7 @@ import Foundation
 public struct TV: Codable, Identifiable, Equatable {
     public struct Device: Codable, Equatable {
         public let countryCode: String?
-        public let description: String?
+        public let deviceDescription: String?
         public let developerIp: String?
         public let developerMode: String?
         public let duid: String?
@@ -40,7 +40,7 @@ public struct TV: Codable, Identifiable, Equatable {
 
         public init(
             countryCode: String? = nil,
-            description: String? = nil,
+            deviceDescription: String? = nil,
             developerIp: String? = nil,
             developerMode: String? = nil,
             duid: String? = nil,
@@ -69,7 +69,7 @@ public struct TV: Codable, Identifiable, Equatable {
             wifiMac: String
         ) {
             self.countryCode = countryCode
-            self.description = description
+            self.deviceDescription = deviceDescription
             self.developerIp = developerIp
             self.developerMode = developerMode
             self.duid = duid
@@ -100,7 +100,7 @@ public struct TV: Codable, Identifiable, Equatable {
 
         enum CodingKeys: String, CodingKey {
             case countryCode
-            case description
+            case deviceDescription = "description"
             case developerIp = "developerIP"
             case developerMode
             case duid
