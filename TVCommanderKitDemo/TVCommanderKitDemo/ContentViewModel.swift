@@ -8,7 +8,7 @@
 import Foundation
 import TVCommanderKit
 
-class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate {
+class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving {
 
     // MARK: State
 
@@ -22,12 +22,17 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
     @Published private(set) var tvIsConnected = false
     @Published private(set) var tvIsDisconnecting = false
     @Published private(set) var tvIsWakingOnLAN = false
-    @Published private(set) var tvFinderIsSearching = false
-    @Published private(set) var tvFinderTVsFound = [TV]()
+    @Published private(set) var isSearchingForTVs = false
+    @Published private(set) var tvsFoundInSearch = [TV]()
     @Published private(set) var tvAuthStatus = TVAuthStatus.none
     @Published private(set) var tvError: Error?
     private var tvCommander: TVCommander?
-    private var tvFinder: TVFinder?
+    private let tvSearcher: TVSearcher
+
+    init() {
+        tvSearcher = TVSearcher()
+        tvSearcher.addSearchObserver(self)
+    }
 
     var connectEnabled: Bool {
         !tvIsConnecting && !tvIsConnected
@@ -132,12 +137,11 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
         }
     }
 
-    func userTappedScanForTVs() {
-        if tvFinder == nil {
-            tvFinder = TVFinder(delegate: self)
-            tvFinder?.findTVs(id: nil)
+    func userTappedSearchForTVs() {
+        if isSearchingForTVs {
+            tvSearcher.stopSearch()
         } else {
-            tvFinder?.stopFindingTVs()
+            tvSearcher.startSearch()
         }
     }
 
@@ -181,18 +185,25 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVFinderDelegate 
         tvError = error
     }
 
-    // MARK: TVFinderDelegate
+    // MARK: TVSearchObserving
 
-    func tvFinder(_ tvFinder: TVFinder, searchStateDidUpdate isSearching: Bool) {
-        tvFinderIsSearching = isSearching
-        if !isSearching {
-            self.tvFinder = nil
-            tvFinderTVsFound.removeAll()
+    func tvSearchDidStart() {
+        isSearchingForTVs = true
+    }
+
+    func tvSearchDidStop() {
+        tvsFoundInSearch.removeAll()
+        isSearchingForTVs = false
+    }
+
+    func tvSearchDidFindTV(_ tv: TV) {
+        if !tvsFoundInSearch.contains(tv) {
+            tvsFoundInSearch.append(tv)
         }
     }
 
-    func tvFinder(_ tvFinder: TVFinder, didFind tvs: [TV]) {
-        tvFinderTVsFound = tvs
+    func tvSearchDidLoseTV(_ tv: TV) {
+        tvsFoundInSearch.removeAll { $0.id == tv.id }
     }
 }
 

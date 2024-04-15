@@ -5,7 +5,7 @@
 ## Table of Contents
 - [Usage](#usage)
 - [Delegate Methods](#delegate-methods)
-- [Finding TVs](#finding-tvs)
+- [Searching for TVs](#searching-for-tvs)
 - [Fetching TV Device Info](#fetching-tv-device-info)
 - [Establishing Connection](#establishing-connection)
 - [Authorizing Application with TV](#authorizing-application-with-tv)
@@ -66,32 +66,33 @@ The TVCommanderDelegate protocol provides methods to receive updates and events 
 
 - `tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)`: Called when the TVCommander encounters an error.
 
-## Finding TVs
+## Searching for TVs
 
-The TVCommanderKit SDK includes a `TVFinder` class that helps you discover Samsung Smart TVs on the network. You can use this class to search for TVs and obtain instances of `TVCommander` for each discovered TV.
+The TVCommanderKit SDK includes a `TVSearcher` class that helps you discover Samsung Smart TVs on the network. You can use this class to search for TVs and obtain `TV` instances for each discovered TV.
 
 ```swift
-let tvFinder = TVFinder(delegate: self)
-tvFinder.findTVs()
+let tvSearcher = TVSearcher()
+tvSearcher.addSearchObserver(self)
+tvSearcher.startSearch()
 ```
 
-You can also specify a TV to search for using its ID:
+You can also specify a TV to search for using its ID. Once the `TVSeacher` finds a TV with a matching ID, it will automatically stop searching:
 
 ```swift
-tvFinder.findTVs(id: "your_tv_id")
+tvSearcher.configureTargetTVId("your_tv_id")
 ```
 
 To stop searching for TVs, call the stopFindingTVs() method:
 
 ```swift
-tvFinder.stopFindingTVs()
+tvSearcher.stopSearch()
 ```
 
-You need to conform to the `TVFinderDelegate` protocol to receive updates on the search state and discovered TVs.
+You need to conform to the `TVSearchObserving` protocol to receive updates on the search state and discovered TVs.
 
 ## Fetching TV Device Info
 
-Upon finding `TV`s using the `TVFinder` class, you can also fetch device info using the `TVFetcher`.
+Upon finding `TV`s using the `TVSearcher` class, you can also fetch device info using the `TVFetcher`.
 
 ```swift
 let tvFetcher = TVFetcher(session: .shared) // use custom URLSession for mocking, etc

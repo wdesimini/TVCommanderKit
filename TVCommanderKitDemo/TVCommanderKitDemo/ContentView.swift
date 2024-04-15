@@ -68,9 +68,9 @@ struct ContentView: View {
                     Button("Wake On LAN", action: contentViewModel.userTappedWakeOnLAN)
                         .disabled(!contentViewModel.wakeOnLANEnabled)
                 }
-                Section("Find TV") {
-                    Button(contentViewModel.tvFinderIsSearching ? "Stop" : "Scan", action: contentViewModel.userTappedScanForTVs)
-                    List(contentViewModel.tvFinderTVsFound) { tv in
+                Section("Search for TVs") {
+                    Button(contentViewModel.isSearchingForTVs ? "Stop" : "Start", action: contentViewModel.userTappedSearchForTVs)
+                    List(contentViewModel.tvsFoundInSearch) { tv in
                         Button {
                             path.append(Route.tv(tv))
                         } label: {
