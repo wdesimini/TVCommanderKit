@@ -8,45 +8,16 @@
 import XCTest
 @testable import TVCommanderKit
 
-private class MockURLSession: URLSession {
-    var data: Data?
-    var response: URLResponse?
-    var error: Error?
-
-    override func dataTask(
-        with url: URL,
-        completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
-    ) -> URLSessionDataTask {
-        let data = data
-        let response = response
-        let error = error
-        return MockURLSessionDataTask {
-            completionHandler(data, response, error)
-        }
-    }
-}
-
-private class MockURLSessionDataTask: URLSessionDataTask {
-    private let closure: () -> Void
-
-    init(closure: @escaping () -> Void) {
-        self.closure = closure
-    }
-
-    override func resume() {
-        closure()
-    }
-}
-
 final class TVFetcherTests: XCTestCase {
     private var tvFetcher: TVFetcher!
-    private var mockSession: MockURLSession!
     private var tv: TV!
     private var responseData: Data!
 
     override func setUp() {
         super.setUp()
-        mockSession = MockURLSession()
+        let sessionConfiguration = URLSessionConfiguration.ephemeral
+        sessionConfiguration.protocolClasses = [MockURLProtocol.self]
+        let mockSession = URLSession(configuration: sessionConfiguration)
         tvFetcher = TVFetcher(session: mockSession)
         tv = TV(
             id: "uuid:4B0307C2-919B-4613-889A-F2D52F8538BC",
@@ -74,22 +45,22 @@ final class TVFetcherTests: XCTestCase {
 
     override func tearDown() {
         tvFetcher = nil
-        mockSession = nil
         tv = nil
         responseData = nil
         super.tearDown()
     }
 
-    func testFetchDevice_Success() {
+    func testFetchDevice_Success() throws {
         // given
         let expectation = XCTestExpectation(description: "Fetch device success")
-        mockSession.data = responseData
-        mockSession.response = HTTPURLResponse(
-            url: URL(string: tv.uri)!,
+        let url = try XCTUnwrap(URL(string: tv.uri))
+        let response = HTTPURLResponse(
+            url: url,
             statusCode: 200,
             httpVersion: nil,
             headerFields: nil
         )
+        MockURLProtocol.mockURLs[url] = (nil, responseData, response)
         // when
         tvFetcher.fetchDevice(for: tv) { result in
             // then
@@ -123,11 +94,12 @@ final class TVFetcherTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
-    func testFetchDevice_FailedRequest() {
+    func testFetchDevice_FailedRequest() throws {
         // given
         let expectation = XCTestExpectation(description: "Fetch device failed request")
-        let error = NSError(domain: "SampleErrorDomain", code: 404, userInfo: nil)
-        mockSession.error = error
+        let expectedError = NSError(domain: "SampleErrorDomain", code: 404, userInfo: nil)
+        let url = try XCTUnwrap(URL(string: tv.uri))
+        MockURLProtocol.mockURLs[url] = (expectedError, nil, nil)
         // when
         tvFetcher.fetchDevice(for: tv) { result in
             // then
@@ -135,24 +107,33 @@ final class TVFetcherTests: XCTestCase {
             case .success(_):
                 XCTFail("Expected failure due to failed request, but got success")
             case .failure(let fetchError):
-                XCTAssertEqual(fetchError, .failedRequest(error, nil))
+                switch fetchError {
+                case .failedRequest(let error, _):
+                    XCTAssertEqual((error as NSError?)?.code, expectedError.code)
+                    XCTAssertEqual((error as NSError?)?.domain, expectedError.domain)
+                    // useInfo not compare/tested here - generated and filled in
+                    // by native code somewhere between URLProtocol and URLSession handler
+                default:
+                    XCTFail("Expecting failed request error")
+                }
             }
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 1)
     }
 
-    func testFetchDevice_UnexpectedResponseBody() {
+    func testFetchDevice_UnexpectedResponseBody() throws {
         // given
         let expectation = XCTestExpectation(description: "Fetch device unexpected response body")
+        let url = try XCTUnwrap(URL(string: tv.uri))
         let invalidResponseData = Data()
-        mockSession.data = invalidResponseData
-        mockSession.response = HTTPURLResponse(
+        let response = HTTPURLResponse(
             url: URL(string: tv.uri)!,
             statusCode: 200,
             httpVersion: nil,
             headerFields: nil
         )
+        MockURLProtocol.mockURLs[url] = (nil, invalidResponseData, response)
         // when
         tvFetcher.fetchDevice(for: tv) { result in
             // then
