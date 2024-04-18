@@ -22,6 +22,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     private(set) public var tvConfig: TVConnectionConfiguration
     private(set) public var authStatus = TVAuthStatus.none
     private(set) public var isConnected = false
+    private let webSocketHandler = TVWebSocketHandler()
     private var webSocket: WebSocket?
     private var commandQueue = [TVRemoteCommand]()
 
@@ -41,10 +42,12 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             scheme: "wss",
             token: authToken
         )
+        webSocketHandler.delegate = self
     }
 
     public convenience init(tv: TV, appName: String, authToken: TVAuthToken? = nil) throws {
-        try self.init(tvId: tv.id, tvIPAddress: tv.device?.ip ?? "", appName: appName, authToken: authToken)
+        guard let ipAddress = tv.ipAddress else { throw TVCommanderError.invalidIPAddressEntered }
+        try self.init(tvId: tv.id, tvIPAddress: ipAddress, appName: appName, authToken: authToken)
     }
 
     // MARK: Establish WebSocket Connection
@@ -54,24 +57,11 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             handleError(.connectionAlreadyEstablished)
             return
         }
-        guard let url = buildTVURL() else {
+        guard let url = tvConfig.wssURL() else {
             handleError(.urlConstructionFailed)
             return
         }
         setupWebSocket(with: url, certPinner: certPinner ?? self)
-    }
-
-    private func buildTVURL() -> URL? {
-        var components = URLComponents()
-        components.path = tvConfig.path
-        components.host = tvConfig.ipAddress
-        components.port = tvConfig.port
-        components.scheme = tvConfig.scheme
-        var queryItems = [URLQueryItem]()
-        tvConfig.app.asBase64.flatMap { queryItems.append(.init(name: "name", value: $0)) }
-        tvConfig.token.flatMap { queryItems.append(.init(name: "token", value: $0)) }
-        components.queryItems = queryItems
-        return components.url
     }
 
     private func setupWebSocket(with url: URL, certPinner: CertificatePinning) {
@@ -82,103 +72,12 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
         webSocket?.connect()
     }
 
-    // MARK: Interact with WebSocket
-
     public func didReceive(event: WebSocketEvent, client: WebSocketClient) {
-        switch event {
-        case .connected:
-            handleWebSocketConnected()
-        case .cancelled, .disconnected:
-            handleWebSocketDisconnected()
-        case .text(let text):
-            handleWebSocketText(text)
-        case .binary(let data):
-            handleWebSocketBinary(data)
-        case .error(let error):
-            handleError(.webSocketError(error))
-        default:
-            break
-        }
+        webSocketHandler.didReceive(event: event, client: client)
     }
 
     public func evaluateTrust(trust: SecTrust, domain: String?, completion: ((PinningState) -> ())) {
         completion(.success)
-    }
-
-    private func handleWebSocketConnected() {
-        isConnected = true
-        delegate?.tvCommanderDidConnect(self)
-    }
-
-    private func handleWebSocketDisconnected() {
-        isConnected = false
-        authStatus = .none
-        webSocket = nil
-        delegate?.tvCommanderDidDisconnect(self)
-    }
-
-    private func handleWebSocketText(_ text: String) {
-        if let packetData = text.asData {
-            webSocketDidReadPacket(packetData)
-        } else {
-            handleError(.packetDataParsingFailed)
-        }
-    }
-
-    private func handleWebSocketBinary(_ data: Data) {
-        webSocketDidReadPacket(data)
-    }
-
-    private func webSocketDidReadPacket(_ packet: Data) {
-        if let authResponse = parseAuthResponse(from: packet) {
-            handleAuthResponse(authResponse)
-        } else {
-            handleError(.packetDataParsingFailed)
-        }
-    }
-
-    // MARK: Receive Auth
-
-    private func parseAuthResponse(from packet: Data) -> TVAuthResponse? {
-        let decoder = JSONDecoder()
-        let authResponseType = TVResponse<TVAuthResponseBody>.self
-        return try? decoder.decode(authResponseType, from: packet)
-    }
-
-    private func handleAuthResponse(_ response: TVAuthResponse) {
-        switch response.event {
-        case .connect:
-            handleAuthAllowed(response)
-        case .unauthorized:
-            handleAuthDenied(response)
-        case .timeout:
-            handleAuthCancelled(response)
-        default:
-            handleError(.authResponseUnexpectedChannelEvent(response))
-        }
-    }
-
-    private func handleAuthAllowed(_ response: TVAuthResponse) {
-        authStatus = .allowed
-        delegate?.tvCommander(self, didUpdateAuthState: authStatus)
-        if let newToken = response.data?.token {
-            tvConfig.token = newToken
-        } else if let refreshedToken = response.data?.clients.first(
-            where: { $0.attributes.name == tvConfig.app.asBase64 })?.attributes.token {
-            tvConfig.token = refreshedToken
-        } else {
-            handleError(.noTokenInAuthResponse(response))
-        }
-    }
-
-    private func handleAuthDenied(_ response: TVAuthResponse) {
-        authStatus = .denied
-        delegate?.tvCommander(self, didUpdateAuthState: authStatus)
-    }
-
-    private func handleAuthCancelled(_ response: TVAuthResponse) {
-        authStatus = .none
-        delegate?.tvCommander(self, didUpdateAuthState: authStatus)
     }
 
     // MARK: Send Remote Control Commands
@@ -317,5 +216,33 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             }
         }
         connection.start(queue: queue)
+    }
+}
+
+// MARK: TVWebSocketHandlerDelegate
+
+extension TVCommander: TVWebSocketHandlerDelegate {
+    func webSocketDidConnect() {
+        isConnected = true
+        delegate?.tvCommanderDidConnect(self)
+    }
+    
+    func webSocketDidDisconnect() {
+        isConnected = false
+        authStatus = .none
+        webSocket = nil
+        delegate?.tvCommanderDidDisconnect(self)
+    }
+    
+    func webSocketDidReadAuthStatus(_ authStatus: TVAuthStatus) {
+        self.authStatus = authStatus
+    }
+    
+    func webSocketDidReadAuthToken(_ authToken: String) {
+        tvConfig.token = authToken
+    }
+    
+    func webSocketError(_ error: TVCommanderError) {
+        delegate?.tvCommander(self, didEncounterError: error)
     }
 }

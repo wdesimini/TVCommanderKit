@@ -75,6 +75,17 @@ extension String {
 // MARK: TV
 
 extension TV {
+    var ipAddress: String? {
+        if let httpURLHost = URLComponents(string: uri)?.host,
+           httpURLHost.isValidIPAddress {
+            return httpURLHost
+        } else if let deviceIPAddress = device?.ip,
+                  deviceIPAddress.isValidIPAddress {
+            return deviceIPAddress
+        }
+        return nil
+    }
+
     func addingDevice(_ device: TV.Device) -> TV {
         TV(
             device: device,
@@ -86,6 +97,23 @@ extension TV {
             uri: uri,
             version: version
         )
+    }
+}
+
+// MARK: TVConnectionConfiguration
+
+extension TVConnectionConfiguration {
+    func wssURL() -> URL? {
+        var components = URLComponents()
+        components.path = path
+        components.host = ipAddress
+        components.port = port
+        components.scheme = scheme
+        var queryItems = [URLQueryItem]()
+        app.asBase64.flatMap { queryItems.append(.init(name: "name", value: $0)) }
+        token.flatMap { queryItems.append(.init(name: "token", value: $0)) }
+        components.queryItems = queryItems
+        return components.url?.removingPercentEncoding
     }
 }
 
