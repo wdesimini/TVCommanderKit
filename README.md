@@ -119,7 +119,7 @@ To establish a connection to your TV, use the `connectToTV()` method. This metho
 tvCommander.connectToTV()
 ```
 
-If you're worried about man-in-the-middle attacks, it's recommended that you implement a custom cert-pinning type and pass it through the optional `certPinner` parameter to ensure connection to a trusted server.
+If you're worried about man-in-the-middle attacks, it's recommended that you implement a custom cert-pinning type and pass it through the optional `certPinner` parameter to ensure connection to a trusted server (make sure your custom cert-pinning type doesn't also strongly reference the `TVCommander`, as this will result in a retain cycle).
 
 ## Authorizing Application with TV
 
