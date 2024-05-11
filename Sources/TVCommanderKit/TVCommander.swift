@@ -17,23 +17,30 @@ public protocol TVCommanderDelegate: AnyObject {
     func tvCommander(_ tvCommander: TVCommander, didEncounterError error: TVCommanderError)
 }
 
-public class TVCommander: WebSocketDelegate, CertificatePinning {
+public class TVCommander: WebSocketDelegate {
     public weak var delegate: TVCommanderDelegate?
     private(set) public var tvConfig: TVConnectionConfiguration
     private(set) public var authStatus = TVAuthStatus.none
     private(set) public var isConnected = false
+    private let webSocketCreator: TVWebSocketCreator
     private let webSocketHandler = TVWebSocketHandler()
     private var webSocket: WebSocket?
     private var commandQueue = [TVRemoteCommand]()
 
-    public init(tvId: String? = nil, tvIPAddress: String, appName: String, authToken: TVAuthToken? = nil) throws {
+    init(tvConfig: TVConnectionConfiguration, webSocketCreator: TVWebSocketCreator) {
+        self.tvConfig = tvConfig
+        self.webSocketCreator = webSocketCreator
+        self.webSocketHandler.delegate = self
+    }
+
+    public convenience init(tvId: String? = nil, tvIPAddress: String, appName: String, authToken: TVAuthToken? = nil) throws {
         guard appName.isValidAppName else {
             throw TVCommanderError.invalidAppNameEntered
         }
         guard tvIPAddress.isValidIPAddress else {
             throw TVCommanderError.invalidIPAddressEntered
         }
-        tvConfig = TVConnectionConfiguration(
+        let tvConfig = TVConnectionConfiguration(
             id: tvId,
             app: appName,
             path: "/api/v2/channels/samsung.remote.control",
@@ -42,7 +49,7 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             scheme: "wss",
             token: authToken
         )
-        webSocketHandler.delegate = self
+        self.init(tvConfig: tvConfig, webSocketCreator: TVWebSocketCreator())
     }
 
     public convenience init(tv: TV, appName: String, authToken: TVAuthToken? = nil) throws {
@@ -51,7 +58,32 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
     }
 
     // MARK: Establish WebSocket Connection
-
+    
+    /// **NOTE**
+    /// make sure any value for `certPinner` inputted here doesn't strongly reference `TVCommander` (will cause a retain cycle if it does)
+    ///
+    /// for example:
+    ///
+    /// **this is okay**
+    /// class Client: TVCommanderDelegate
+    ///     let certPinner: CustomCertPinner
+    ///     let tvCommander: TVCommander
+    ///     func connectTVCommander()
+    ///         tvCommander.connectToTV(certPinner: certPinner)
+    ///
+    /// **this is also okay**
+    /// class Client: TVCommanderDelegate
+    ///     let tvCommander: TVCommander
+    ///     func connectTVCommander()
+    ///         let certPinner = CustomCertPinner()
+    ///         tvCommander.connectToTV(certPinner: certPinner)
+    ///
+    /// **this will leak**
+    /// class Client: TVCommanderDelegate, CertificatePinning
+    ///     let tvCommander: TVCommander
+    ///     func connectTVCommander()
+    ///         tvCommander.connectToTV(certPinner: self)
+    ///
     public func connectToTV(certPinner: CertificatePinning? = nil) {
         guard !isConnected else {
             handleError(.connectionAlreadyEstablished)
@@ -61,23 +93,13 @@ public class TVCommander: WebSocketDelegate, CertificatePinning {
             handleError(.urlConstructionFailed)
             return
         }
-        setupWebSocket(with: url, certPinner: certPinner ?? self)
-    }
-
-    private func setupWebSocket(with url: URL, certPinner: CertificatePinning) {
-        let request = URLRequest(url: url)
-        webSocket = WebSocket(request: request, certPinner: certPinner)
-        webSocket?.respondToPingWithPong = true
-        webSocket?.delegate = self
+        webSocket = webSocketCreator.createTVWebSocket(
+            url: url, certPinner: certPinner, delegate: self)
         webSocket?.connect()
     }
 
     public func didReceive(event: WebSocketEvent, client: WebSocketClient) {
         webSocketHandler.didReceive(event: event, client: client)
-    }
-
-    public func evaluateTrust(trust: SecTrust, domain: String?, completion: ((PinningState) -> ())) {
-        completion(.success)
     }
 
     // MARK: Send Remote Control Commands

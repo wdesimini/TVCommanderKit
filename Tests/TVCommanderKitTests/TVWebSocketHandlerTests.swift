@@ -43,18 +43,14 @@ final class TVWebSocketHandlerTests: XCTestCase {
     }
 
     func testReceiveTextWithValidNewAuthPacket() {
-        let jsonString = """
-        {"data":{"clients":[{"attributes":{"name":"VGVzdA=="},"connectTime":1713369027676,"deviceName":"VGVzdA==","id":"502e895e-251f-48ca-b786-0f83b20102c5","isHost":false}],"id":"502e895e-251f-48ca-b786-0f83b20102c5","token":"99999999"},"event":"ms.channel.connect"}
-        """
+        let jsonString = #"{"data":{"clients":[{"attributes":{"name":"VGVzdA=="},"connectTime":1713369027676,"deviceName":"VGVzdA==","id":"502e895e-251f-48ca-b786-0f83b20102c5","isHost":false}],"id":"502e895e-251f-48ca-b786-0f83b20102c5","token":"99999999"},"event":"ms.channel.connect"}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertEqual(delegate.lastAuthToken, "99999999")
         XCTAssertEqual(delegate.lastAuthStatus, .allowed)
     }
 
     func testReceiveTextWithValidRefreshedAuthPacket() {
-        let jsonString = """
-        {"data":{"clients":[{"attributes":{"name":"VGVzdA==","token":"99999999"},"connectTime":1713369027676,"deviceName":"VGVzdA==","id":"502e895e-251f-48ca-b786-0f83b20102c5","isHost":false}],"id":"502e895e-251f-48ca-b786-0f83b20102c5"},"event":"ms.channel.connect"}
-        """
+        let jsonString = #"{"data":{"clients":[{"attributes":{"name":"VGVzdA==","token":"99999999"},"connectTime":1713369027676,"deviceName":"VGVzdA==","id":"502e895e-251f-48ca-b786-0f83b20102c5","isHost":false}],"id":"502e895e-251f-48ca-b786-0f83b20102c5"},"event":"ms.channel.connect"}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertEqual(delegate.lastAuthToken, "99999999")
         XCTAssertEqual(delegate.lastAuthStatus, .allowed)
@@ -67,17 +63,13 @@ final class TVWebSocketHandlerTests: XCTestCase {
     }
 
     func testReceiveTextWithTimeoutPacket() {
-        let jsonString = """
-        {"event":"ms.channel.timeOut"}
-        """
+        let jsonString = #"{"event":"ms.channel.timeOut"}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertEqual(delegate.lastAuthStatus, TVAuthStatus.none)
     }
 
     func testReceiveTextWithUnauthorizedPacket() {
-        let jsonString = """
-        {"event":"ms.channel.unauthorized"}
-        """
+        let jsonString = #"{"event":"ms.channel.unauthorized"}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertEqual(delegate.lastAuthStatus, .denied)
     }
@@ -95,17 +87,13 @@ final class TVWebSocketHandlerTests: XCTestCase {
     }
 
     func testAuthResponseWithNoToken() {
-        let jsonString = """
-        {"event":"ms.channel.connect","data":{}}
-        """
+        let jsonString = #"{"event":"ms.channel.connect","data":{}}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertNotNil(delegate.lastError)
     }
 
     func testAuthResponseWithUnexpectedEvent() {
-        let jsonString = """
-        {"event":"unknownEvent"}
-        """
+        let jsonString = #"{"event":"unknownEvent"}"#
         handler.didReceive(event: .text(jsonString), client: mockClient)
         XCTAssertNotNil(delegate.lastError)
     }

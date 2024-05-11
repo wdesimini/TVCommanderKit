@@ -7,7 +7,9 @@
 
 import Foundation
 
+/// Represents a TV discovered in a search
 public struct TV: Codable, Identifiable, Equatable {
+    /// Represents detailed device information for a TV
     public struct Device: Codable, Equatable {
         public let countryCode: String?
         public let deviceDescription: String?
@@ -17,8 +19,10 @@ public struct TV: Codable, Identifiable, Equatable {
         public let firmwareVersion: String?
         public let frameTvSupport: String?
         public let gamePadSupport: String?
+        /// Unique identifier for the device, often the same as the TV id
         public let id: String?
         public let imeSyncedSupport: String?
+        /// IP address of the TV on the network
         public let ip: String?
         public let language: String?
         public let model: String?
@@ -26,16 +30,19 @@ public struct TV: Codable, Identifiable, Equatable {
         public let name: String?
         public let networkType: String?
         public let os: String?
+        /// Current power state of the TV, e.g., "on", "off", "standby"
         public let powerState: String?
         public let resolution: String?
         public let smartHubAgreement: String?
         public let ssid: String?
+        /// Indicates whether the TV supports token-based authorization
         public let tokenAuthSupport: String
         public let type: String?
         public let udn: String?
         public let voiceSupport: String?
         public let wallScreenRatio: String?
         public let wallService: String?
+        /// MAC address of the TV's Wi-Fi connection
         public let wifiMac: String
 
         public init(
@@ -130,12 +137,16 @@ public struct TV: Codable, Identifiable, Equatable {
         }
     }
 
+    /// Detailed information about the TV
     public let device: Device?
+    /// Unique identifier for the TV
     public let id: String
     public let isSupport: String?
+    /// User-friendly name of the TV
     public let name: String
     public let remote: String?
     public let type: String
+    /// URI used to query the TV via HTTP
     public let uri: String
     public let version: String?
 
@@ -161,7 +172,12 @@ public struct TV: Codable, Identifiable, Equatable {
 }
 
 public enum TVAuthStatus {
-    case none, allowed, denied
+    /// Client hasn't completed authorization with TV
+    case none
+    /// Client is authorized to command TV
+    case allowed
+    /// Client is denied authorization to command TV
+    case denied
 }
 
 public typealias TVAuthToken = String
@@ -186,16 +202,19 @@ public struct TVConnectionConfiguration {
     }
 }
 
+/// Defines the overall command to be sent to the TV
 public struct TVRemoteCommand: Codable {
     public enum Method: String, Codable {
         case control = "ms.remote.control"
     }
 
+    /// Contains the specific parameters for a remote command
     public struct Params: Codable {
         public enum Command: String, Codable {
             case click = "Click"
         }
 
+        /// Enum representing the keys on a TV's remote control
         public enum ControlKey: String, Codable {
             case powerOff = "KEY_POWEROFF"
             case up = "KEY_UP"
@@ -240,9 +259,13 @@ public struct TVRemoteCommand: Codable {
             case remoteKey = "SendRemoteKey"
         }
 
+        /// Command to be executed, e.g., "Click"
         public let cmd: Command
+        /// Specific key data associated with the command
         public let dataOfCmd: ControlKey
+        /// Additional option that may modify the command's execution
         public let option: Bool
+        /// Type of the remote control that the command applies to, e.g., "SendRemoteKey"
         public let typeOfRemote: ControlType
 
         enum CodingKeys: String, CodingKey {
@@ -260,7 +283,9 @@ public struct TVRemoteCommand: Codable {
         }
     }
 
+    /// The type of method performed via the WebSocket
     public let method: Method
+    /// An object containing parameters needed to execute the command
     public let params: Params
 
     public init(method: Method, params: Params) {
@@ -276,9 +301,13 @@ public struct TVResponse<Body: Codable>: Codable {
 
 public typealias TVAuthResponse = TVResponse<TVAuthResponseBody>
 
+/// Data payload associated with a TVAuthResponse
 public struct TVAuthResponseBody: Codable {
+    /// List of clients connected to the TV
     public let clients: [TVClient]
+    /// Identifier associated with an authorized connection
     public let id: String
+    /// New token passed back with an authorized connection
     public let token: TVAuthToken?
 }
 
@@ -296,9 +325,13 @@ public enum TVChannelEvent: String, Codable {
     case unauthorized = "ms.channel.unauthorized"
 }
 
+/// Represents a client connected to the TV
 public struct TVClient: Codable, Identifiable {
+    /// Attributes of a client connected to the TV
     public struct Attributes: Codable {
+        /// Name of the client (encoded in Base64)
         public let name: String?
+        /// Refreshed token associated with the client
         public let token: TVAuthToken?
 
         public init(name: String?, token: TVAuthToken?) {
@@ -307,10 +340,15 @@ public struct TVClient: Codable, Identifiable {
         }
     }
 
+    /// Attributes of the client
     public let attributes: Attributes
+    /// Timestamp when the client connected
     public let connectTime: Int
+    /// Name of the device (encoded in Base64)
     public let deviceName: String
+    /// Unique identifier of the client's authorized connection
     public let id: String
+    /// Indicates whether the client is the host or not
     public let isHost: Bool
 
     public init(attributes: Attributes, connectTime: Int, deviceName: String, id: String, isHost: Bool) {
