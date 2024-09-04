@@ -14,6 +14,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving
 
     @Published var appName = "sample_app"
     @Published var tvIPAddress = ""
+    @Published var tvAuthToken: TVAuthToken?
     @Published var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
     @Published var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
     @Published var keyboardSelected = "qwerty"
@@ -36,6 +37,13 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving
 
     var connectEnabled: Bool {
         !tvIsConnecting && !tvIsConnected
+    }
+
+    var authTokenEntryDisabled: Bool {
+        tvCommander != nil
+        || tvIsConnecting
+        || tvIsConnected
+        || tvIsDisconnecting
     }
 
     var controlsEnabled: Bool {
@@ -150,7 +158,11 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving
     private func setupTVCommander() {
         guard tvCommander == nil else { return }
         do {
-            tvCommander = try TVCommander(tvIPAddress: tvIPAddress, appName: appName)
+            tvCommander = try TVCommander(
+                tvIPAddress: tvIPAddress,
+                appName: appName,
+                authToken: tvAuthToken
+            )
             tvCommander?.delegate = self
         } catch {
             tvError = error
@@ -176,6 +188,7 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving
 
     func tvCommander(_ tvCommander: TVCommander, didUpdateAuthState authStatus: TVAuthStatus) {
         tvAuthStatus = authStatus
+        tvAuthToken = tvCommander.tvConfig.token
     }
 
     func tvCommander(_ tvCommander: TVCommander, didWriteRemoteCommand command: TVRemoteCommand) {

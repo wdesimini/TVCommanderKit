@@ -30,6 +30,20 @@ struct ContentView: View {
                 Section("Connect / Disconnect TV") {
                     TextField("App Name", text: $contentViewModel.appName)
                     TextField("TV IP Address", text: $contentViewModel.tvIPAddress)
+                    if let tvAuthTokenBinding = tvAuthTokenBinding {
+                        HStack {
+                            TextField("Auth Token", text: tvAuthTokenBinding)
+                            Button("Remove") {
+                                contentViewModel.tvAuthToken = nil
+                            }
+                        }
+                        .disabled(contentViewModel.authTokenEntryDisabled)
+                    } else {
+                        Button("Add Auth Token") {
+                            contentViewModel.tvAuthToken = ""
+                        }
+                        .disabled(contentViewModel.authTokenEntryDisabled)
+                    }
                     if contentViewModel.tvIsConnected {
                         Button("Disconnect", action: contentViewModel.userTappedDisconnect)
                             .disabled(!contentViewModel.disconnectEnabled)
@@ -105,6 +119,16 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private var tvAuthTokenBinding: Binding<TVAuthToken>? {
+        guard let tvAuthToken = contentViewModel.tvAuthToken else {
+            return nil
+        }
+        return Binding(
+            get: { tvAuthToken },
+            set: { contentViewModel.tvAuthToken = $0 }
+        )
     }
 
     private func authStatusAsText(_ authStatus: TVAuthStatus) -> String {
