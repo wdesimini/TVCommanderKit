@@ -12,7 +12,7 @@ protocol TVWebSocketHandlerDelegate: AnyObject {
     func webSocketDidConnect()
     func webSocketDidDisconnect()
     func webSocketDidReadAuthStatus(_ authStatus: TVAuthStatus)
-    func webSocketDidReadAuthToken(_ authToken: String)
+    func webSocketDidReadAuthToken(_ authToken: TVAuthToken)
     func webSocketError(_ error: TVCommanderError)
 }
 
@@ -64,8 +64,8 @@ class TVWebSocketHandler {
     private func handleAuthResponse(_ response: TVAuthResponse) {
         switch response.event {
         case .connect:
-            delegate?.webSocketDidReadAuthStatus(.allowed)
             parseTokenFromAuthResponse(response)
+            delegate?.webSocketDidReadAuthStatus(.allowed)
         case .unauthorized:
             delegate?.webSocketDidReadAuthStatus(.denied)
         case .timeout:

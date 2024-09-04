@@ -261,7 +261,7 @@ extension TVCommander: TVWebSocketHandlerDelegate {
         delegate?.tvCommander(self, didUpdateAuthState: authStatus)
     }
     
-    func webSocketDidReadAuthToken(_ authToken: String) {
+    func webSocketDidReadAuthToken(_ authToken: TVAuthToken) {
         tvConfig.token = authToken
     }
     
