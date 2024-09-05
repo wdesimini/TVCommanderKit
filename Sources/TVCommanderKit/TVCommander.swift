@@ -22,6 +22,7 @@ public class TVCommander: WebSocketDelegate {
     private(set) public var tvConfig: TVConnectionConfiguration
     private(set) public var authStatus = TVAuthStatus.none
     private(set) public var isConnected = false
+    private let queue = DispatchQueue(label: "com.WilsonDesimini.TVCommanderQueue")
     private let webSocketCreator: TVWebSocketCreator
     private let webSocketHandler = TVWebSocketHandler()
     private var webSocket: WebSocket?
@@ -85,35 +86,44 @@ public class TVCommander: WebSocketDelegate {
     ///         tvCommander.connectToTV(certPinner: self)
     ///
     public func connectToTV(certPinner: CertificatePinning? = nil) {
-        guard !isConnected else {
-            handleError(.connectionAlreadyEstablished)
-            return
+        queue.async { [weak self] in
+            guard let self else { return }
+            guard !isConnected else {
+                handleError(.connectionAlreadyEstablished)
+                return
+            }
+            guard let url = tvConfig.wssURL() else {
+                handleError(.urlConstructionFailed)
+                return
+            }
+            webSocket = webSocketCreator.createTVWebSocket(
+                url: url, certPinner: certPinner, delegate: self)
+            webSocket?.connect()
         }
-        guard let url = tvConfig.wssURL() else {
-            handleError(.urlConstructionFailed)
-            return
-        }
-        webSocket = webSocketCreator.createTVWebSocket(
-            url: url, certPinner: certPinner, delegate: self)
-        webSocket?.connect()
     }
 
     public func didReceive(event: WebSocketEvent, client: WebSocketClient) {
-        webSocketHandler.didReceive(event: event, client: client)
+        queue.async { [weak self] in
+            guard let self else { return }
+            webSocketHandler.didReceive(event: event, client: client)
+        }
     }
 
     // MARK: Send Remote Control Commands
 
     public func sendRemoteCommand(key: TVRemoteCommand.Params.ControlKey) {
-        guard isConnected else {
-            handleError(.remoteCommandNotConnectedToTV)
-            return
+        queue.async { [weak self] in
+            guard let self else { return }
+            guard isConnected else {
+                handleError(.remoteCommandNotConnectedToTV)
+                return
+            }
+            guard authStatus == .allowed else {
+                handleError(.remoteCommandAuthenticationStatusNotAllowed)
+                return
+            }
+            sendCommandOverWebSocket(createRemoteCommand(key: key))
         }
-        guard authStatus == .allowed else {
-            handleError(.remoteCommandAuthenticationStatusNotAllowed)
-            return
-        }
-        sendCommandOverWebSocket(createRemoteCommand(key: key))
     }
 
     private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
@@ -147,8 +157,11 @@ public class TVCommander: WebSocketDelegate {
     // MARK: Send Keyboard Commands
 
     public func enterText(_ text: String, on keyboard: TVKeyboardLayout) {
-        let keys = controlKeys(toEnter: text, on: keyboard)
-        keys.forEach(sendRemoteCommand(key:))
+        queue.async { [weak self] in
+            guard let self else { return }
+            let keys = controlKeys(toEnter: text, on: keyboard)
+            keys.forEach(sendRemoteCommand(key:))
+        }
     }
 
     private func controlKeys(toEnter text: String, on keyboard: TVKeyboardLayout) -> [TVRemoteCommand.Params.ControlKey] {
@@ -200,7 +213,10 @@ public class TVCommander: WebSocketDelegate {
     // MARK: Disconnect WebSocket Connection
 
     public func disconnectFromTV() {
-        webSocket?.disconnect()
+        queue.async { [weak self] in
+            guard let self else { return }
+            webSocket?.disconnect()
+        }
     }
 
     // MARK: Handler Errors
@@ -245,27 +261,42 @@ public class TVCommander: WebSocketDelegate {
 
 extension TVCommander: TVWebSocketHandlerDelegate {
     func webSocketDidConnect() {
-        isConnected = true
-        delegate?.tvCommanderDidConnect(self)
+        queue.async { [weak self] in
+            guard let self else { return }
+            isConnected = true
+            delegate?.tvCommanderDidConnect(self)
+        }
     }
     
     func webSocketDidDisconnect() {
-        isConnected = false
-        authStatus = .none
-        webSocket = nil
-        delegate?.tvCommanderDidDisconnect(self)
+        queue.async { [weak self] in
+            guard let self else { return }
+            isConnected = false
+            authStatus = .none
+            webSocket = nil
+            delegate?.tvCommanderDidDisconnect(self)
+        }
     }
     
     func webSocketDidReadAuthStatus(_ authStatus: TVAuthStatus) {
-        self.authStatus = authStatus
-        delegate?.tvCommander(self, didUpdateAuthState: authStatus)
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.authStatus = authStatus
+            delegate?.tvCommander(self, didUpdateAuthState: authStatus)
+        }
     }
     
     func webSocketDidReadAuthToken(_ authToken: TVAuthToken) {
-        tvConfig.token = authToken
+        queue.async { [weak self] in
+            guard let self else { return }
+            tvConfig.token = authToken
+        }
     }
     
     func webSocketError(_ error: TVCommanderError) {
-        delegate?.tvCommander(self, didEncounterError: error)
+        queue.async { [weak self] in
+            guard let self else { return }
+            delegate?.tvCommander(self, didEncounterError: error)
+        }
     }
 }
