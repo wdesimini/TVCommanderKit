@@ -8,25 +8,26 @@
 import Foundation
 import TVCommanderKit
 
-class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving {
+@Observable
+class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
 
     // MARK: State
 
-    @Published var appName = "sample_app"
-    @Published var tvIPAddress = ""
-    @Published var tvAuthToken: TVAuthToken?
-    @Published var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
-    @Published var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
-    @Published var keyboardSelected = "qwerty"
-    @Published var keyboardEntry = ""
-    @Published private(set) var tvIsConnecting = false
-    @Published private(set) var tvIsConnected = false
-    @Published private(set) var tvIsDisconnecting = false
-    @Published private(set) var tvIsWakingOnLAN = false
-    @Published private(set) var isSearchingForTVs = false
-    @Published private(set) var tvsFoundInSearch = [TV]()
-    @Published private(set) var tvAuthStatus = TVAuthStatus.none
-    @Published private(set) var tvError: Error?
+    var appName = "sample_app"
+    var tvIPAddress = ""
+    var tvAuthToken: TVAuthToken?
+    var tvWakeOnLANDevice = TVWakeOnLANDevice(mac: "")
+    var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
+    var keyboardSelected = "qwerty"
+    var keyboardEntry = ""
+    private(set) var tvIsConnecting = false
+    private(set) var tvIsConnected = false
+    private(set) var tvIsDisconnecting = false
+    private(set) var tvIsWakingOnLAN = false
+    private(set) var isSearchingForTVs = false
+    private(set) var tvsFoundInSearch = [TV]()
+    private(set) var tvAuthStatus = TVAuthStatus.none
+    private(set) var tvError: Error?
     private var tvCommander: TVCommander?
     private let tvSearcher: TVSearcher
 
@@ -220,10 +221,10 @@ class ContentViewModel: ObservableObject, TVCommanderDelegate, TVSearchObserving
     }
 }
 
-class TVViewModel: ObservableObject {
+@Observable
+class TVViewModel {
     private let tvFetcher = TVFetcher()
-
-    @Published private(set) var tv: TV
+    private(set) var tv: TV
 
     init(tv: TV) {
         self.tv = tv
