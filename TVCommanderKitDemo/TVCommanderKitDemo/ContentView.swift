@@ -20,7 +20,7 @@ struct ContentView: View {
         }
     }
 
-    @StateObject var contentViewModel = ContentViewModel()
+    @State private var contentViewModel = ContentViewModel()
     @State private var isPresentingError = false
     @State private var path = NavigationPath()
 
@@ -113,10 +113,8 @@ struct ContentView: View {
                     }
                 )
             }
-            .onReceive(contentViewModel.$tvError) { newError in
-                if newError != nil {
-                    isPresentingError = true
-                }
+            .onReceive(contentViewModel.tvError.publisher) { _ in
+                isPresentingError = true
             }
         }
     }
@@ -141,7 +139,7 @@ struct ContentView: View {
 }
 
 struct TVView: View {
-    @StateObject private var viewModel: TVViewModel
+    @State private var viewModel: TVViewModel
 
     init(tv: TV) {
         _viewModel = .init(wrappedValue: .init(tv: tv))
