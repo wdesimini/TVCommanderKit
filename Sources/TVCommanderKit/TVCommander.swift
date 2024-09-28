@@ -58,32 +58,9 @@ public class TVCommander: WebSocketDelegate {
     }
 
     // MARK: Establish WebSocket Connection
-    
+
     /// **NOTE**
     /// make sure any value for `certPinner` inputted here doesn't strongly reference `TVCommander` (will cause a retain cycle if it does)
-    ///
-    /// for example:
-    ///
-    /// **this is okay**
-    /// class Client: TVCommanderDelegate
-    ///     let certPinner: CustomCertPinner
-    ///     let tvCommander: TVCommander
-    ///     func connectTVCommander()
-    ///         tvCommander.connectToTV(certPinner: certPinner)
-    ///
-    /// **this is also okay**
-    /// class Client: TVCommanderDelegate
-    ///     let tvCommander: TVCommander
-    ///     func connectTVCommander()
-    ///         let certPinner = CustomCertPinner()
-    ///         tvCommander.connectToTV(certPinner: certPinner)
-    ///
-    /// **this will leak**
-    /// class Client: TVCommanderDelegate, CertificatePinning
-    ///     let tvCommander: TVCommander
-    ///     func connectTVCommander()
-    ///         tvCommander.connectToTV(certPinner: self)
-    ///
     public func connectToTV(certPinner: CertificatePinning? = nil) {
         guard !isConnected else {
             handleError(.connectionAlreadyEstablished)
