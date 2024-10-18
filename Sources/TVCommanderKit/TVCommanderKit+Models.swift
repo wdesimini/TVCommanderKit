@@ -377,3 +377,29 @@ public struct TVWakeOnLANDevice {
         self.init(mac: device.wifiMac, broadcast: broadcast, port: port)
     }
 }
+
+public struct TVApp: Identifiable, Hashable {
+    public let id: String
+    public let name: String
+
+    public init(id: String, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
+
+public struct TVAppStatus: Codable, Identifiable {
+    public let id: String
+    public let name: String
+    public let running: Bool
+    public let version: String
+    public let visible: Bool
+
+    public init(id: String, name: String, running: Bool, version: String, visible: Bool) {
+        self.id = id
+        self.name = name
+        self.running = running
+        self.version = version
+        self.visible = visible
+    }
+}
