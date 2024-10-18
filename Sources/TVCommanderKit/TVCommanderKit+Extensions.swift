@@ -100,6 +100,60 @@ extension TV {
     }
 }
 
+// MARK: TVApp
+
+extension TVApp {
+    public static func allApps() -> [TVApp] {
+        [
+            espn(),
+            hulu(),
+            max(),
+            netflix(),
+            paramountPlus(),
+            plutoTV(),
+            primeVideo(),
+            spotify(),
+            youtube()
+        ]
+    }
+
+    public static func espn() -> TVApp {
+        TVApp(id: "3201708014618", name: "ESPN")
+    }
+
+    public static func hulu() -> TVApp {
+        TVApp(id: "3201601007625", name: "Hulu")
+    }
+
+    public static func max() -> TVApp {
+        TVApp(id: "3202301029760", name: "Max")
+    }
+
+    public static func netflix() -> TVApp {
+        TVApp(id: "3201907018807", name: "Netflix")
+    }
+
+    public static func paramountPlus() -> TVApp {
+        TVApp(id: "3201710014981", name: "Paramount +")
+    }
+
+    public static func plutoTV() -> TVApp {
+        TVApp(id: "3201808016802", name: "Pluto TV")
+    }
+
+    public static func primeVideo() -> TVApp {
+        TVApp(id: "3201910019365", name: "Prime Video")
+    }
+
+    public static func spotify() -> TVApp {
+        TVApp(id: "3201606009684", name: "Spotify")
+    }
+
+    public static func youtube() -> TVApp {
+        TVApp(id: "111299001912", name: "YouTube")
+    }
+}
+
 // MARK: TVConnectionConfiguration
 
 extension TVConnectionConfiguration {
