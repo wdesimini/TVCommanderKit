@@ -96,6 +96,19 @@ struct ContentView: View {
                         }
                     }
                 }
+                Section("Installed Apps") {
+                    Picker("Selected TV App", selection: $contentViewModel.tvApp) {
+                        ForEach(contentViewModel.tvApps) { app in
+                            Text(app.name).tag(app)
+                        }
+                    }
+                    Button("Status") {
+                        contentViewModel.userTappedAppStatus()
+                    }
+                    Button("Launch") {
+                        contentViewModel.userTappedLaunchApp()
+                    }
+                }
             }
             .navigationBarTitle("TV Controller")
             .navigationDestination(for: Route.self) { route in
@@ -104,6 +117,10 @@ struct ContentView: View {
                     TVView(tv: tv)
                 }
             }
+            .sheet(
+                item: $contentViewModel.tvAppStatus,
+                content: TVAppStatusView.init
+            )
             .alert(isPresented: $isPresentingError) {
                 Alert(
                     title: Text("Error"),
@@ -170,6 +187,27 @@ struct TVView: View {
     }
 }
 
+struct TVAppStatusView: View {
+    let status: TVAppStatus
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Text("ID: \(status.id)")
+                Text("Running: \(status.running ? "Yes" : "No")")
+                Text("Version: \(status.version)")
+                Text("Visible: \(status.visible ? "Yes" : "No")")
+            }
+            .navigationTitle(status.name)
+            .toolbar {
+                Button("Done") {
+                    dismiss()
+                }
+            }
+        }
+    }
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
