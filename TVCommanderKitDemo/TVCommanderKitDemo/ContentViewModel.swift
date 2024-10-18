@@ -20,6 +20,8 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
     var remoteCommandKeySelected = TVRemoteCommand.Params.ControlKey.mute
     var keyboardSelected = "qwerty"
     var keyboardEntry = ""
+    var tvApp: TVApp = .netflix()
+    var tvAppStatus: TVAppStatus?
     private(set) var tvIsConnecting = false
     private(set) var tvIsConnected = false
     private(set) var tvIsDisconnecting = false
@@ -29,9 +31,11 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
     private(set) var tvAuthStatus = TVAuthStatus.none
     private(set) var tvError: Error?
     private var tvCommander: TVCommander?
+    private let tvAppManager: TVAppManaging
     private let tvSearcher: TVSearcher
 
     init() {
+        tvAppManager = TVAppManager()
         tvSearcher = TVSearcher()
         tvSearcher.addSearchObserver(self)
     }
@@ -104,6 +108,10 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
         ]
     }
 
+    var tvApps: [TVApp] {
+        TVApp.allApps()
+    }
+
     // MARK: User Actions
 
     func userTappedConnect() {
@@ -154,6 +162,18 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
         }
     }
 
+    func userTappedAppStatus() {
+        Task {
+            await fetchAppStatus()
+        }
+    }
+
+    func userTappedLaunchApp() {
+        Task {
+            await launchApp()
+        }
+    }
+
     // MARK: Lifecycle
 
     private func setupTVCommander() {
@@ -172,6 +192,22 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
 
     private func removeTVCommander() {
         tvCommander = nil
+    }
+
+    private func fetchAppStatus() async {
+        do {
+            tvAppStatus = try await tvAppManager.fetchStatus(for: tvApp, tvIPAddress: tvIPAddress)
+        } catch {
+            tvError = error
+        }
+    }
+
+    private func launchApp() async {
+        do {
+            try await tvAppManager.launch(tvApp: tvApp, tvIPAddress: tvIPAddress)
+        } catch {
+            tvError = error
+        }
     }
 
     // MARK: TVCommanderDelegate

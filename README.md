@@ -14,6 +14,7 @@
 - [Error Handling](#error-handling)
 - [Text Entry](#text-entry)
 - [Wake on LAN](#wake-on-lan)
+- [Managing TV Apps](#managing-tv-apps)
 - [License](#license)
 
 ## Usage
@@ -179,6 +180,35 @@ TVCommander.wakeOnLAN(device: device) { error in
     }
 }
 ```
+
+## Managing TV Apps
+
+`TVAppManager` allows you to interact with TV applications on Samsung TVs using their IP address and app ID.
+
+#### Usage
+
+1. **Initialization:**
+
+   ```swift
+   let tvAppManager = TVAppManager()
+   let tvApp = TVApp(id: "3201907018807", name: "Netflix")
+   ```
+
+2. **Fetch App Status:**
+
+   ```swift
+   let tvIPAddress = "192.168.1.100"
+   let appStatus = try await tvAppManager.fetchStatus(for: tvApp, tvIPAddress: tvIPAddress)
+   print(appStatus)
+   ```
+
+3. **Launch App:**
+
+   ```swift
+   try await tvAppManager.launch(tvApp: tvApp, tvIPAddress: tvIPAddress)
+   ```
+
+Errors like invalid URLs or app not found are handled by `TVAppManagerError` and `TVAppNetworkError`.
 
 ## License
 
