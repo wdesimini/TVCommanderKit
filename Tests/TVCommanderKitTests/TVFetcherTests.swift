@@ -15,10 +15,7 @@ final class TVFetcherTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let sessionConfiguration = URLSessionConfiguration.ephemeral
-        sessionConfiguration.protocolClasses = [MockURLProtocol.self]
-        let mockSession = URLSession(configuration: sessionConfiguration)
-        tvFetcher = TVFetcher(session: mockSession)
+        tvFetcher = TVFetcher(session: .mock())
         tv = TV(
             id: "uuid:4B0307C2-919B-4613-889A-F2D52F8538BC",
             name: "Samsung Q7DAA 55 TV",
@@ -27,41 +24,22 @@ final class TVFetcherTests: XCTestCase {
             uri: "http://192.168.0.1:8001/api/v2/",
             version: "2.0.25"
         )
-        responseData = """
-            {
-                "device": {
-                    "TokenAuthSupport": "true",
-                    "wifiMac": "00:00:00:00:0A:AA"
-                },
-                "id": "uuid:4B0307C2-919B-4613-889A-F2D52F8538BC",
-                "name": "Samsung Q7DAA 55 TV",
-                "remote": "1.0",
-                "type": "Samsung SmartTV",
-                "uri": "http://192.168.0.1:8001/api/v2/",
-                "version": "2.0.25"
-            }
-            """.data(using: .utf8)
     }
 
     override func tearDown() {
         tvFetcher = nil
         tv = nil
-        responseData = nil
         super.tearDown()
     }
 
     func testFetchDevice_Success() throws {
         // given
-        let expectation = XCTestExpectation(description: "Fetch device success")
         let url = try XCTUnwrap(URL(string: tv.uri))
-        let response = HTTPURLResponse(
-            url: url,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )
-        MockURLProtocol.mockURLs[url] = (nil, responseData, response)
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let responseData = #"{"device":{"TokenAuthSupport":"true","wifiMac":"00:00:00:00:0A:AA"},"id":"uuid:4B0307C2-919B-4613-889A-F2D52F8538BC","name":"Samsung Q7DAA 55 TV","remote":"1.0","type":"Samsung SmartTV","uri":"http://192.168.0.1:8001/api/v2/","version":"2.0.25"}"#.data(using: .utf8)
+        MockURLProtocol.expect(.init(data: responseData, response: response), for: url)
         // when
+        let expectation = XCTestExpectation(description: "Fetch device success")
         tvFetcher.fetchDevice(for: tv) { result in
             // then
             switch result {
@@ -78,9 +56,9 @@ final class TVFetcherTests: XCTestCase {
 
     func testFetchDevice_InvalidURL() {
         // given
-        let expectation = XCTestExpectation(description: "Fetch device invalid URL")
         tv = .init(id: tv.id, name: tv.name, type: tv.type, uri: "")
         // when
+        let expectation = XCTestExpectation(description: "Fetch device invalid URL")
         tvFetcher.fetchDevice(for: tv) { result in
             // then
             switch result {
@@ -96,11 +74,11 @@ final class TVFetcherTests: XCTestCase {
 
     func testFetchDevice_FailedRequest() throws {
         // given
-        let expectation = XCTestExpectation(description: "Fetch device failed request")
         let expectedError = NSError(domain: "SampleErrorDomain", code: 404, userInfo: nil)
         let url = try XCTUnwrap(URL(string: tv.uri))
-        MockURLProtocol.mockURLs[url] = (expectedError, nil, nil)
+        MockURLProtocol.expect(.init(error: expectedError), for: url)
         // when
+        let expectation = XCTestExpectation(description: "Fetch device failed request")
         tvFetcher.fetchDevice(for: tv) { result in
             // then
             switch result {
@@ -124,7 +102,6 @@ final class TVFetcherTests: XCTestCase {
 
     func testFetchDevice_UnexpectedResponseBody() throws {
         // given
-        let expectation = XCTestExpectation(description: "Fetch device unexpected response body")
         let url = try XCTUnwrap(URL(string: tv.uri))
         let invalidResponseData = Data()
         let response = HTTPURLResponse(
@@ -133,8 +110,9 @@ final class TVFetcherTests: XCTestCase {
             httpVersion: nil,
             headerFields: nil
         )
-        MockURLProtocol.mockURLs[url] = (nil, invalidResponseData, response)
+        MockURLProtocol.expect(.init(data: invalidResponseData, response: response), for: url)
         // when
+        let expectation = XCTestExpectation(description: "Fetch device unexpected response body")
         tvFetcher.fetchDevice(for: tv) { result in
             // then
             switch result {
