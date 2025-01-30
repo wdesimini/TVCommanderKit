@@ -70,8 +70,7 @@ public class TVCommander: WebSocketDelegate {
             handleError(.urlConstructionFailed)
             return
         }
-        webSocket = webSocketCreator.createTVWebSocket(
-            url: url, certPinner: certPinner, delegate: self)
+        webSocket = webSocketCreator.createTVWebSocket(url: url, certPinner: certPinner, delegate: self)
         webSocket?.connect()
     }
 
@@ -91,6 +90,24 @@ public class TVCommander: WebSocketDelegate {
             return
         }
         sendCommandOverWebSocket(createRemoteCommand(key: key))
+    }
+
+    /// Send a text as text field input to the TV. Text will replace existing text in TV textfield.
+    public func sendText(_ text: String) {
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+
+        let base64Text = Data(text.utf8).base64EncodedString()
+
+        let params = TVRemoteCommand.Params(cmd: .textInput(base64Text), dataOfCmd: .base64, option: false, typeOfRemote: .inputString)
+        let command = TVRemoteCommand(method: .control, params: params)
+        sendCommandOverWebSocket(command)
     }
 
     private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
