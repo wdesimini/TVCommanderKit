@@ -124,11 +124,22 @@ public class TVCommander: WebSocketDelegate {
     // MARK: Send Keyboard Commands
 
     public func enterText(_ text: String, on keyboard: TVKeyboardLayout) {
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+
         let keys = controlKeys(toEnter: text, on: keyboard)
         keys.forEach(sendRemoteCommand(key:))
     }
 
     private func controlKeys(toEnter text: String, on keyboard: TVKeyboardLayout) -> [TVRemoteCommand.Params.ControlKey] {
+        guard !text.isEmpty else { return [] } // Check for empty string, otherwise it will crash on line 145
+
         let chars = Array(text)
         var moves: [TVRemoteCommand.Params.ControlKey] = [.enter]
         for i in 0..<(chars.count - 1) {
