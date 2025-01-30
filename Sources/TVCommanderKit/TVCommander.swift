@@ -92,6 +92,7 @@ public class TVCommander: WebSocketDelegate {
         sendCommandOverWebSocket(createRemoteCommand(key: key))
     }
 
+    /// Send a text as text field input to the TV. Text will replace existing text in TV textfield.
     public func sendText(_ text: String) {
         guard isConnected else {
             handleError(.remoteCommandNotConnectedToTV)
