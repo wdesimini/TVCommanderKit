@@ -93,25 +93,20 @@ public class TVCommander: WebSocketDelegate {
     }
 
     public func sendText(_ text: String) {
-        let base64Text = Data(text.utf8).base64EncodedString()
-
-        let command: [String: Any] = [
-            "method": "ms.remote.control",
-            "params": [
-                "Cmd": base64Text,
-                "DataOfCmd": "base64",
-                "TypeOfRemote": "SendInputString"
-            ]
-        ]
-
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: command, options: [])
-            let jsonString = String(data: jsonData, encoding: .utf8)!
-            webSocket?.write(string: jsonString)
-        } catch {
-            handleError(.commandConversionToStringFailed)
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
         }
 
+        let base64Text = Data(text.utf8).base64EncodedString()
+
+        let params = TVRemoteCommand.Params(cmd: .textInput(base64Text), dataOfCmd: .base64, option: false, typeOfRemote: .inputString)
+        let command = TVRemoteCommand(method: .control, params: params)
+        sendCommandOverWebSocket(command)
     }
 
     private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
