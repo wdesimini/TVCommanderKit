@@ -70,8 +70,7 @@ public class TVCommander: WebSocketDelegate {
             handleError(.urlConstructionFailed)
             return
         }
-        webSocket = webSocketCreator.createTVWebSocket(
-            url: url, certPinner: certPinner, delegate: self)
+        webSocket = webSocketCreator.createTVWebSocket(url: url, certPinner: certPinner, delegate: self)
         webSocket?.connect()
     }
 
@@ -91,6 +90,28 @@ public class TVCommander: WebSocketDelegate {
             return
         }
         sendCommandOverWebSocket(createRemoteCommand(key: key))
+    }
+
+    public func sendText(_ text: String) {
+        let base64Text = Data(text.utf8).base64EncodedString()
+
+        let command: [String: Any] = [
+            "method": "ms.remote.control",
+            "params": [
+                "Cmd": base64Text,
+                "DataOfCmd": "base64",
+                "TypeOfRemote": "SendInputString"
+            ]
+        ]
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: command, options: [])
+            let jsonString = String(data: jsonData, encoding: .utf8)!
+            webSocket?.write(string: jsonString)
+        } catch {
+            handleError(.commandConversionToStringFailed)
+        }
+
     }
 
     private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
