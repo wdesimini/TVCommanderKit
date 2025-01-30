@@ -203,15 +203,29 @@ public struct TVConnectionConfiguration {
 }
 
 /// Defines the overall command to be sent to the TV
-public struct TVRemoteCommand: Codable {
+public struct TVRemoteCommand: Encodable {
     public enum Method: String, Codable {
         case control = "ms.remote.control"
     }
 
     /// Contains the specific parameters for a remote command
-    public struct Params: Codable {
-        public enum Command: String, Codable {
-            case click = "Click"
+    public struct Params: Encodable {
+        public enum Command: RawRepresentable, Encodable {
+            case click
+            case textInput(String)
+
+            public init?(rawValue: String) {
+                nil // Never used
+            }
+
+            public var rawValue: String {
+                switch self {
+                case .click:
+                    return "Click"
+                case .textInput(let text):
+                    return text
+                }
+            }
         }
 
         /// Enum representing the keys on a TV's remote control
@@ -253,6 +267,7 @@ public struct TVRemoteCommand: Codable {
             case sourceTV = "KEY_DTV"
             case sourceHDMI = "KEY_HDMI"
             case contents = "KEY_CONTENTS"
+            case base64 = "base64" // Used for text input
         }
 
         public enum ControlType: String, Codable {

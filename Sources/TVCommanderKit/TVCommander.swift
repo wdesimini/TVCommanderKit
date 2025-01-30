@@ -70,8 +70,7 @@ public class TVCommander: WebSocketDelegate {
             handleError(.urlConstructionFailed)
             return
         }
-        webSocket = webSocketCreator.createTVWebSocket(
-            url: url, certPinner: certPinner, delegate: self)
+        webSocket = webSocketCreator.createTVWebSocket(url: url, certPinner: certPinner, delegate: self)
         webSocket?.connect()
     }
 
@@ -91,6 +90,24 @@ public class TVCommander: WebSocketDelegate {
             return
         }
         sendCommandOverWebSocket(createRemoteCommand(key: key))
+    }
+
+    /// Send a text as text field input to the TV. Text will replace existing text in TV textfield.
+    public func sendText(_ text: String) {
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+
+        let base64Text = Data(text.utf8).base64EncodedString()
+
+        let params = TVRemoteCommand.Params(cmd: .textInput(base64Text), dataOfCmd: .base64, option: false, typeOfRemote: .inputString)
+        let command = TVRemoteCommand(method: .control, params: params)
+        sendCommandOverWebSocket(command)
     }
 
     private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
@@ -124,11 +141,22 @@ public class TVCommander: WebSocketDelegate {
     // MARK: Send Keyboard Commands
 
     public func enterText(_ text: String, on keyboard: TVKeyboardLayout) {
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+
         let keys = controlKeys(toEnter: text, on: keyboard)
         keys.forEach(sendRemoteCommand(key:))
     }
 
     private func controlKeys(toEnter text: String, on keyboard: TVKeyboardLayout) -> [TVRemoteCommand.Params.ControlKey] {
+        guard !text.isEmpty else { return [] } // Check for empty string, otherwise it will crash on line 145
+
         let chars = Array(text)
         var moves: [TVRemoteCommand.Params.ControlKey] = [.enter]
         for i in 0..<(chars.count - 1) {
