@@ -146,13 +146,21 @@ tvCommander.sendRemoteCommand(key: .enter)
 
 ## Text Entry
 
-**TVCommanderKit** includes a convenient text entry feature, allowing you to quickly input text into on-screen keyboards. This feature is useful for applications that require users to search or input text on their TVs, as it will convert a given text into a series of arrow and enter controls to send one after the other. Ensure that you are connected to the TV and the authorization status is allowed before entering text.
+**TVCommanderKit** provides a convenient text entry feature, allowing you to quickly input text into on-screen keyboards. There are now two ways to send text input to the TV:
 
-```swift
-let textToEnter = "Hello, World!"
-let keyboardLayout = TVKeyboardLayout.youtube
-tvCommander.enterText(textToEnter, on: keyboardLayout)
-```
+1. **Direct Text Input**  
+    Use `sendText(_:)` to send text directly to the TV. This is the preferred method for compatible devices.  
+    ```swift
+    let textToSend = "Hello, World!"
+    tvCommander.sendText(textToSend)
+    ```
+2. **Keyboard Navigation (Legacy)**  
+    The `enterText(_:on:)` method simulates typing by navigating an on-screen keyboard. This approach will likely be removed in future versions.
+    ```swift
+    let textToEnter = "Hello, World!"
+    let keyboardLayout = TVKeyboardLayout.youtube
+    tvCommander.enterText(textToEnter, on: keyboardLayout)
+    ```
 
 ## Disconnecting from TV
 
