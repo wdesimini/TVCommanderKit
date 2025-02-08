@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum TVCommanderError: Error {
+public enum TVCommanderError: LocalizedError {
     // invalid app name
     case invalidAppNameEntered
     // invalid ip address
@@ -38,4 +38,39 @@ public enum TVCommanderError: Error {
     case wakeOnLANProcessingError(Error)
     // an unknown error occurs.
     case unknownError(Error?)
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidAppNameEntered:
+            "Invalid App Name Entered"
+        case .invalidIPAddressEntered:
+            "Invalid IP Address Entered"
+        case .connectionAlreadyEstablished:
+            "Connection Already Established"
+        case .urlConstructionFailed:
+            "URL Construction Failed"
+        case .webSocketError(let error):
+            "WebSocket Error: \(String(describing: error))"
+        case .packetDataParsingFailed:
+            "Packet Data Parsing Failed"
+        case .authResponseUnexpectedChannelEvent(let authResponse):
+            "Auth Response Unexpected Channel Event: \(authResponse)"
+        case .noTokenInAuthResponse(let authResponse):
+            "No Token In Auth Response: \(authResponse)"
+        case .remoteCommandNotConnectedToTV:
+            "Remote Command Not Connected To TV"
+        case .remoteCommandAuthenticationStatusNotAllowed:
+            "Remote Command Authentication Status Not Allowed"
+        case .commandConversionToStringFailed:
+            "Command Conversion To String Failed"
+        case .keyboardCharNotFound(let char):
+            "Keyboard Char Not Found: \(char)"
+        case .wakeOnLANConnectionError(let error):
+            "Wake On LAN Connection Error: \(error.localizedDescription)"
+        case .wakeOnLANProcessingError(let error):
+            "Wake On LAN Processing Error: \(error.localizedDescription)"
+        case .unknownError(let error):
+            "Unknown Error: \(error?.localizedDescription ?? "")"
+        }
+    }
 }
