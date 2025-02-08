@@ -140,6 +140,10 @@ class ContentViewModel: TVCommanderDelegate, TVSearchObserving {
         }
     }
 
+    func userTappedSendTextInput() {
+        tvCommander?.sendText(keyboardEntry)
+    }
+
     func userTappedDisconnect() {
         tvIsDisconnecting = true
         tvCommander?.disconnectFromTV()

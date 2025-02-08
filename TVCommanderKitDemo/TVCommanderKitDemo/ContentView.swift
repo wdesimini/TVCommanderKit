@@ -64,16 +64,18 @@ struct ContentView: View {
                     Button("Send", action: contentViewModel.userTappedSend)
                         .disabled(!contentViewModel.controlsEnabled)
                 }
-                Section("Enter Text On Keyboard") {
+                Section("Send Text") {
+                    TextField("Text", text: $contentViewModel.keyboardEntry)
+                    Button("Send via Direct Input", action: contentViewModel.userTappedSendTextInput)
+                        .disabled(!contentViewModel.keyboardSendEnabled)
                     Picker(selection: $contentViewModel.keyboardSelected) {
                         ForEach(contentViewModel.keyboards, id: \.self) {
                             Text($0).tag($0)
                         }
                     } label: {
-                        TextField("Text", text: $contentViewModel.keyboardEntry)
+                        Button("Send via Keyboard Entry", action: contentViewModel.userTappedKeyboardSend)
+                            .disabled(!contentViewModel.keyboardSendEnabled)
                     }
-                    Button("Send", action: contentViewModel.userTappedKeyboardSend)
-                        .disabled(!contentViewModel.keyboardSendEnabled)
                 }
                 Section("Wake TV On LAN") {
                     TextField("TV MAC Address", text: $contentViewModel.tvWakeOnLANDevice.mac)
