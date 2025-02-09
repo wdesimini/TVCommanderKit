@@ -212,6 +212,8 @@ public struct TVRemoteCommand: Encodable {
     public struct Params: Encodable {
         public enum Command: RawRepresentable, Encodable {
             case click
+            case press
+            case release
             case textInput(String)
 
             public init?(rawValue: String) {
@@ -222,6 +224,10 @@ public struct TVRemoteCommand: Encodable {
                 switch self {
                 case .click:
                     return "Click"
+                case .press:
+                    return "Press"
+                case .release:
+                    return "Release"
                 case .textInput(let text):
                     return text
                 }

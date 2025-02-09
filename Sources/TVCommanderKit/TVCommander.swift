@@ -89,7 +89,7 @@ public class TVCommander: WebSocketDelegate {
             handleError(.remoteCommandAuthenticationStatusNotAllowed)
             return
         }
-        sendCommandOverWebSocket(createRemoteCommand(key: key))
+        sendCommandOverWebSocket(.createClickCommand(key))
     }
 
     /// Send a text as text field input to the TV. Text will replace existing text in TV textfield.
@@ -102,17 +102,7 @@ public class TVCommander: WebSocketDelegate {
             handleError(.remoteCommandAuthenticationStatusNotAllowed)
             return
         }
-
-        let base64Text = Data(text.utf8).base64EncodedString()
-
-        let params = TVRemoteCommand.Params(cmd: .textInput(base64Text), dataOfCmd: .base64, option: false, typeOfRemote: .inputString)
-        let command = TVRemoteCommand(method: .control, params: params)
-        sendCommandOverWebSocket(command)
-    }
-
-    private func createRemoteCommand(key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
-        let params = TVRemoteCommand.Params(cmd: .click, dataOfCmd: key, option: false, typeOfRemote: .remoteKey)
-        return TVRemoteCommand(method: .control, params: params)
+        sendCommandOverWebSocket(.createTextInputCommand(text))
     }
 
     private func sendCommandOverWebSocket(_ command: TVRemoteCommand) {

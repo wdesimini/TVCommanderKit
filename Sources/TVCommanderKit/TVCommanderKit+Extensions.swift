@@ -193,6 +193,59 @@ extension TVKeyboardLayout {
     }
 }
 
+// MARK: TVRemoteCommand
+
+extension TVRemoteCommand {
+    static func createClickCommand(_ key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
+        TVRemoteCommand(
+            method: .control,
+            params: .init(
+                cmd: .click,
+                dataOfCmd: key,
+                option: false,
+                typeOfRemote: .remoteKey
+            )
+        )
+    }
+
+    static func createPressCommand(_ key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
+        TVRemoteCommand(
+            method: .control,
+            params: .init(
+                cmd: .press,
+                dataOfCmd: key,
+                option: false,
+                typeOfRemote: .remoteKey
+            )
+        )
+    }
+
+    static func createReleaseCommand(_ key: TVRemoteCommand.Params.ControlKey) -> TVRemoteCommand {
+        TVRemoteCommand(
+            method: .control,
+            params: .init(
+                cmd: .release,
+                dataOfCmd: key,
+                option: false,
+                typeOfRemote: .remoteKey
+            )
+        )
+    }
+
+    static func createTextInputCommand(_ text: String) -> TVRemoteCommand {
+        TVRemoteCommand(
+            method: .control,
+            params: .init(
+                cmd: .textInput(Data(text.utf8).base64EncodedString()),
+                dataOfCmd: .base64,
+                option: false,
+                typeOfRemote: .inputString
+            )
+        )
+    }
+}
+
+
 // MARK: URL
 
 extension URL {
